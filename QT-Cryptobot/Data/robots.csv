@@ -1,0 +1,5 @@
+Robot Name,Symbol,Quantity,Stratergy,Status,Bought
+robot1,BTC/USD,0.5,MACD&RSI,Running,20.0
+robot2,DOT/USD,0.03,MACD&RSI,Running,0.0
+robot3,ETH/USD,0.03,MACD&RSI,Stopped,0.0
+robot4,LINK/USD,0.03,MACD&RSI,Stopped,0.0

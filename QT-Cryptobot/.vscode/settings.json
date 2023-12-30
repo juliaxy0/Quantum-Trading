@@ -1,0 +1,8 @@
+{
+    "git.ignoreLimitWarning": true,
+    "python.analysis.extraPaths": [
+        "./Robot",
+        "./Robot/robots"
+    ],
+    "cmake.configureOnOpen": false
+}
