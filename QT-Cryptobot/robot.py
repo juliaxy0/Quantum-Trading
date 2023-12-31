@@ -141,7 +141,7 @@ class robotClass:
             clean_symbol = symbol.replace('/', '')
 
             # Empty the file
-            file_path = f'backtestingData/{clean_symbol}.csv'
+            file_path = f'E:/QuantumTrading/QT-Backtest-API/backtestingData/{clean_symbol}.csv'
             header = "timestamp,open,high,low,close,volume,trade_count,vwap\n"
             with open(file_path, 'w') as file:
                 file.write(header)
@@ -167,7 +167,7 @@ class robotClass:
                 historical_df = historical_df.drop(columns=['symbol']).set_index('timestamp')
 
                 # Append the new data to 'symbol.csv' or create a new file
-                history_filename = f'QT-Backtest-API/backtestingData/{clean_symbol}.csv'
+                history_filename = f'E:/QuantumTrading/QT-Backtest-API/backtestingData/{clean_symbol}.csv'
                 historical_df.to_csv(history_filename, mode='a', header=not os.path.exists(history_filename), index=True)
                 print(f"Historical data for {symbol} saved successfully!")
 

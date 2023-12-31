@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
-st.title("Robot Manager")
+st.subheader("Robot Manager")
 
 # Create alpaca user
 alpaca_user = alpacaClass()
@@ -131,6 +131,8 @@ with form_column:
                     else:
                         st.error("Error: Robot already exists.")
 
+        st.caption("*A single robot is limited to implementing just one strategy for a particular cryptocurrency.")
+
 ############################## column view on the left
 
 # View robots column
@@ -158,7 +160,8 @@ while True:
 
         # Read CSV
         df = pd.read_csv("Data/profit.csv")
-
+        df = df.tail(100)
+        
         # Convert Timestamp to datetime
         df['Timestamp'] = pd.to_datetime(df['Timestamp'])
 
@@ -184,13 +187,15 @@ while True:
     with placeholderViewRobot.container():
 
         view_robot_data = pd.read_csv('Data/robots.csv')
-        selected_data = view_robot_data.drop(columns=view_robot_data.columns.difference(['Robot Name','Symbol', 'Quantity', 'Stratergy', 'Status']))
+        selected_data = view_robot_data.drop(columns=view_robot_data.columns.difference(['Robot Name','Symbol', 'Quantity', 'Stratergy', 'Status','Bought']))
         st.table(selected_data)
 
-        st.info('Only one robot can perform one stratergy to one cryptocurrency', icon="ℹ️")
+        st.info('Backtest robot with stratergies for more informed decisions', icon="ℹ️")
 
     # View transaction placeholder
-    with placeholder.container():
+    with placeholder.container(border=True):
+
+        
 
         # Read data from 'robots.csv'
         transaction_data = pd.read_csv('Data/transactions.csv')

@@ -97,12 +97,12 @@ class sentimentAnalysisClass:
         # Create DataFrame without the first row
         df = pd.DataFrame(final_output[1:], columns=final_output[0])
 
-        csv_file_path = 'sentimentData/{}.csv'.format(self.crypto)
+        csv_file_path = 'E:/QuantumTrading/QT-Sentiment-API/sentimentData/{}.csv'.format(self.crypto)
 
         # Check if the file exists
         if not os.path.isfile(csv_file_path):
             # If the file doesn't exist, create it with the specified header
-            df.to_csv(csv_file_path, index=False, header=['Ticker', 'Summary', 'Sentiment','Sentiment Score', 'URL\n'])
+            df.to_csv(csv_file_path, index=False, header=['Ticker', 'Summary', 'Sentiment','Sentiment Score', 'URL'])
         else:
             # If the file exists, append the DataFrame without headers
             df.to_csv(csv_file_path, mode='a', header=False, index=False)

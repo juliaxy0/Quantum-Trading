@@ -48,7 +48,6 @@ class alpacaClass:
         _self.fetch_real_time_link_data()
         _self.getAccountDetails()
         _self.get_asset()
-        _self.cleanFiles()
 
     def getAccountDetails(_self):
         try:
@@ -67,25 +66,28 @@ class alpacaClass:
             # PnL
             pnl = float(_self.account.equity) - float(_self.account.last_equity)
 
-            # Create a new row DataFrame
-            new_row = pd.DataFrame({'timestamp': [current_time], 'buying power': [bp], 'equity': [equity], 'cash': [cash], 'pnl': [pnl]})
+            # Create a new row list
+            new_row = [current_time, bp, equity, cash, pnl]
 
-            # Load existing DataFrame from CSV file or create an empty DataFrame with the header
-            try:
-                existing_data = pd.read_csv('Data/accountInfo.csv', parse_dates=['timestamp'])
-            except FileNotFoundError:
-                header = ['timestamp', 'buying power', 'equity', 'cash', 'pnl']
-                existing_data = pd.DataFrame(columns=header)
+            file_path = 'Data/accountInfo.csv'
 
-            # Concatenate existing data with the new row
-            updated_data = pd.concat([existing_data, new_row], ignore_index=True)
+            # Check if the file exists
+            file_exists = os.path.exists(file_path)
 
-            # Save the updated DataFrame to CSV file
-            updated_data.to_csv('Data/accountInfo.csv', index=False)
+            # Append the new row to the CSV file
+            with open(file_path, 'a', newline='') as csvfile:
+                csv_writer = csv.writer(csvfile)
+
+                # Write the header only if the file is empty
+                if not file_exists:
+                    header = ['timestamp', 'buying power', 'equity', 'cash', 'pnl']
+                    csv_writer.writerow(header)
+
+                csv_writer.writerow(new_row)
 
         except Exception as e:
             print(f"Error fetching account details: {e}")
-
+    
     def get_asset(_self):
         try:
             # Get a list of all of our positions.
@@ -208,28 +210,6 @@ class alpacaClass:
         header = "Robot Name,Profit,Timestamp\n"
         with open(file_path, 'w') as file:
             file.write(header)
-
-    def cleanFiles(_self):
-
-        files_to_clean = ['Data/accountInfo.csv', 'Data/asset.csv', 'Data/profit.csv']
-
-        for file_path in files_to_clean:
-            try:
-                # Read the CSV file
-                df = pd.read_csv(file_path)
-
-                # Check if the row length is more than 100
-                if len(df) > 100:
-                    # Truncate the DataFrame to keep only the latest 100 rows
-                    df = df.iloc[-80:]
-
-                    # Save the truncated DataFrame back to the CSV file
-                    df.to_csv(file_path, index=False)
-
-            except Exception as e:
-                print(f"Error cleaning {file_path}: {e}")
-
-    
             
     ####################### BTC
 
@@ -304,22 +284,6 @@ class alpacaClass:
         except Exception as e:
             print(f"Error updating BTC data: {e}")
             # Handle the exception as needed
-
-
-    # Live data from CSV
-    def get_live_btc_data(_self):
-        try:
-            # Read live data from 'btc.csv' file
-            live_data = pd.read_csv('Data/btc.csv', parse_dates=['timestamp'])
-            live_data = live_data.set_index('timestamp')
-
-            return live_data
-        except FileNotFoundError:
-            print("Error: 'btc.csv' file not found. Please ensure the file exists.")
-            return pd.DataFrame()  # Return an empty DataFrame if the file is not found
-        except Exception as e:
-            print(f"Error reading btc live data: {e}")
-            return pd.DataFrame()  # Return an empty DataFrame for any other exception
         
     ####################### ETH
 
@@ -396,21 +360,6 @@ class alpacaClass:
             print(f"Error updating ETH data: {e}")
             # Handle the exception as needed
 
-
-    # Live data from CSV
-    def get_live_eth_data(_self):
-        try:
-            # Read live data from 'btc.csv' file
-            live_data = pd.read_csv('Data/eth.csv', parse_dates=['timestamp'])
-            live_data = live_data.set_index('timestamp')
-
-            return live_data
-        except FileNotFoundError:
-            print("Error: 'eth.csv' file not found. Please ensure the file exists.")
-            return pd.DataFrame()  # Return an empty DataFrame if the file is not found
-        except Exception as e:
-            print(f"Error reading eth live data: {e}")
-            return pd.DataFrame()  # Return an empty DataFrame for any other exception
         
     ####################### LTC
 
@@ -418,7 +367,7 @@ class alpacaClass:
     def get_initial_ltc_data(_self):
 
         # Calculate the start and end times for the initial data (e.g., 30 minutes ago)
-        initial_start_time = datetime.utcnow() - timedelta(minutes=30)
+        initial_start_time = datetime.utcnow() - timedelta(minutes=50)
         initial_end_time = datetime.utcnow()
 
         # Creating request object for initial data
@@ -445,7 +394,7 @@ class alpacaClass:
             end_time = datetime.utcnow()
 
             # Calculate the start time as 1 minute ago
-            start_time = end_time - timedelta(minutes=10)
+            start_time = end_time - timedelta(minutes=30)
 
             # Creating request object for current minute's data
             current_request_params = CryptoBarsRequest(
@@ -487,22 +436,6 @@ class alpacaClass:
             print(f"Error updating LTC data: {e}")
             # Handle the exception as needed
 
-
-    # Live data from CSV
-    def get_live_ltc_data(_self):
-        try:
-            # Read live data from 'btc.csv' file
-            live_data = pd.read_csv('Data/ltc.csv', parse_dates=['timestamp'])
-            live_data = live_data.set_index('timestamp')
-
-            return live_data
-        except FileNotFoundError:
-            print("Error: 'ltc.csv' file not found. Please ensure the file exists.")
-            return pd.DataFrame()  # Return an empty DataFrame if the file is not found
-        except Exception as e:
-            print(f"Error reading ltc live data: {e}")
-            return pd.DataFrame()  # Return an empty DataFrame for any other exception
-        
     
     ####################### LINK
 
@@ -510,7 +443,7 @@ class alpacaClass:
     def get_initial_link_data(_self):
 
         # Calculate the start and end times for the initial data (e.g., 30 minutes ago)
-        initial_start_time = datetime.utcnow() - timedelta(minutes=30)
+        initial_start_time = datetime.utcnow() - timedelta(minutes=50)
         initial_end_time = datetime.utcnow()
 
         # Creating request object for initial data
@@ -537,7 +470,7 @@ class alpacaClass:
             end_time = datetime.utcnow()
 
             # Calculate the start time as 1 minute ago
-            start_time = end_time - timedelta(minutes=10)
+            start_time = end_time - timedelta(minutes=20)
 
             # Creating request object for current minute's data
             current_request_params = CryptoBarsRequest(
@@ -579,21 +512,6 @@ class alpacaClass:
             print(f"Error updating LINK data: {e}")
             # Handle the exception as needed
 
-
-    # Live data from CSV
-    def get_live_link_data(_self):
-        try:
-            # Read live data from 'btc.csv' file
-            live_data = pd.read_csv('Data/link.csv', parse_dates=['timestamp'])
-            live_data = live_data.set_index('timestamp')
-
-            return live_data
-        except FileNotFoundError:
-            print("Error: 'link.csv' file not found. Please ensure the file exists.")
-            return pd.DataFrame()  # Return an empty DataFrame if the file is not found
-        except Exception as e:
-            print(f"Error reading link live data: {e}")
-            return pd.DataFrame()  # Return an empty DataFrame for any other exception
     
     ################################### Calling robots by each price change
         
@@ -607,6 +525,56 @@ class alpacaClass:
         except Exception as e:
             print(f"Error fetching robot data: {e}")
             return None
+        
+    def get_latest_cash(self):
+
+        try:
+            # Path to the accountInfo.csv file
+            account_info_path = 'Data/accountInfo.csv'
+
+            # Read the CSV file into a DataFrame
+            account_info_df = pd.read_csv(account_info_path)
+
+            # Get the latest cash value
+            latest_cash = account_info_df['cash'].iloc[-1]
+
+            return latest_cash
+        except Exception as e:
+            print(f"Error fetching latest cash : {e}")
+
+    def manual_order(_self,symb,quantity,order_type):
+        try:
+
+            # Pulling data
+            cash = _self.get_latest_cash()
+            all_price = _self.getRealTimePrices()
+            formatted_symbol = symb.replace('/USD', '').lower()
+            symb_price = all_price.loc[all_price['symbol'] == formatted_symbol, 'last_close'].values[0]
+
+            if order_type == 'Buy':
+                # Check if can buy
+                if cash >= symb_price:
+                    _self.buy(symb, quantity, "Manual")
+                    robotClass.updateBought(quantity,"Manual")
+                    print("Manual buy succesful")
+                    return True
+                else:
+                    print("Manual buy unsuccessful: Not enough fund")
+                    return False
+                    
+            else:
+                position = _self.trading_client.get_open_position(symb.replace("/", ""))
+                available_quantity = float(position.qty_available) if position else 0
+
+                if available_quantity >= quantity:
+                    _self.sell(symb, quantity, "Manual")
+                    print("Manual sell succesful")
+                else:
+                    print("Manual buy unsuccessful: Not enough asset")
+
+        except Exception as e:
+            print(f"Error placing manual order: {e}")
+
 
     # preparing BUY market orders
     def buy(_self, symb, quantity, robot_name):
@@ -685,8 +653,8 @@ class alpacaClass:
                     sell_condition = False
 
                     # Execute the corresponding strategy method
-                    if strategy == "SentimentSync":
-                        buy_condition, sell_condition = stratergiesClass.SentimentSync(coin,current_data)
+                    if strategy == "MACD RSI":
+                        buy_condition, sell_condition = stratergiesClass.macd_rsi(coin,current_data)
                     elif strategy == "SMA":
                         buy_condition, sell_condition = stratergiesClass.sma_strategy(coin,current_data)
                     elif strategy == "RSI":

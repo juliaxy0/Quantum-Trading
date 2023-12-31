@@ -1,10 +1,11 @@
 import talib
-import requests
+import os
+import pandas as pd
 
 class stratergiesClass:
         
     @staticmethod
-    def SentimentSync(crypto,current_data):
+    def macd_rsi(crypto,current_data):
 
         try:
 
@@ -18,14 +19,10 @@ class stratergiesClass:
             # Get crypto
             crypto = crypto
             crypto = crypto.replace("/USD", "")
-            sentiment_result = stratergiesClass.check_sentiment(crypto)
-
-            # Extract buy_condition and error
-            result = sentiment_result.get('result', False)
-
+            
             # Generate buy/sell signals based on MACD and RSI for the last row only
-            last_row['buy_signal'] = (last_row['macd'] > last_row['macdsignal']) & (last_row['rsi'] < 30) & (result == True)
-            last_row['sell_signal'] = (last_row['macd'] < last_row['macdsignal']) & (last_row['rsi'] > 70) & (result == False)
+            last_row['buy_signal'] = (last_row['macd'] > last_row['macdsignal']) & (last_row['rsi'] < 30) 
+            last_row['sell_signal'] = (last_row['macd'] < last_row['macdsignal']) & (last_row['rsi'] > 70) 
 
             buy_condition = last_row['buy_signal']
             sell_condition = last_row['sell_signal']
@@ -39,27 +36,34 @@ class stratergiesClass:
 
             # Return default values or handle the error as needed
             return False, False
-    
+        
+    @staticmethod
     def check_sentiment(crypto):
         try:
-            url = f"http://127.0.0.1:8000/check_sentiment/{crypto}"
-            response = requests.get(url)
-            result = response.json()
+            # Check if the file exists
+            file_path = 'E:/QuantumTrading/QT-Sentiment-API/sentimentData/{}.csv'.format(crypto)
+            if not os.path.isfile(file_path):
+                print("Error {}: File does not exist.".format(crypto))
 
-            # If problem, default is false
-            return {
-                'result': result.get('result', False),
-                'error': result.get('error', False),
-            }
+            # Read the CSV file into a DataFrame
+            df = pd.read_csv(file_path)
+
+            # Check if the DataFrame has at least 10 rows
+            if len(df) < 10:
+                print("Error {}: Not enough rows in the DataFrame.".format(crypto))
+
+            # Extract the 'Sentiment' column from the last 20 rows
+            last_10_sentiments = df.tail(10)['Sentiment']
+
+            # Check if at least 10 out of the last 20 rows have a positive sentiment
+            positive_sentiments = last_10_sentiments[last_10_sentiments == 'POSITIVE']
+
+            score = len(positive_sentiments)
+            return score
+
         except Exception as e:
-            # Handle the exception here, you can print an error message or log it
-            print(f"Error in Sentiment API: {e}")
-
-            # Return default values or handle the error as needed
-            return {
-                'result': False,
-                'error': False,
-            }
+            # Print or log the exception details
+            print(f"Exception: {e}")
 
     @staticmethod
     def sma_strategy(current_data):

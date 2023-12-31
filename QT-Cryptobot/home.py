@@ -41,33 +41,39 @@ while True:
         link_image = Image.open("pics/link.png")
         ltc_image = Image.open("pics/ltc.png")
         more_image = Image.open("pics/more.png")
+        info_image = Image.open("pics/info.png")
 
         # Fetch real time close prices
         closePrices = alpaca_user.getRealTimePrices()
-            
+        
+        def get_close_values(close_prices, symbol):
+            try:
+                current_close = round(close_prices.loc[close_prices['symbol'] == symbol, 'current_close'].values[0], 2)
+                last_close = round(close_prices.loc[close_prices['symbol'] == symbol, 'last_close'].values[0], 2)
+                return current_close, last_close
+            except IndexError:
+                # If index is out of bounds, return 0.0 for both values
+                return 0.0, 0.0
+    
         # BTC KPI
-        btc_current_close = round(closePrices.loc[closePrices['symbol'] == 'btc', 'current_close'].values[0],2)
-        btc_last_close = round(closePrices.loc[closePrices['symbol'] == 'btc', 'last_close'].values[0],2)
+        btc_current_close, btc_last_close = get_close_values(closePrices, 'btc')
         btc_close = "${:,.2f}".format(btc_current_close)
-        delta_btc = round(btc_current_close - btc_last_close,2)
+        delta_btc = round(btc_current_close - btc_last_close, 2)
 
         # ETH KPI
-        eth_current_close = round(closePrices.loc[closePrices['symbol'] == 'eth', 'current_close'].values[0],2)
-        eth_last_close = round(closePrices.loc[closePrices['symbol'] == 'eth', 'last_close'].values[0],2)
+        eth_current_close, eth_last_close = get_close_values(closePrices, 'eth')
         eth_close = "${:,.2f}".format(eth_current_close)
-        delta_eth = round(eth_current_close - eth_last_close,2)
-        
+        delta_eth = round(eth_current_close - eth_last_close, 2)
+
         # LTC KPI
-        ltc_current_close = round(closePrices.loc[closePrices['symbol'] == 'ltc', 'current_close'].values[0],2)
-        ltc_last_close = round(closePrices.loc[closePrices['symbol'] == 'ltc', 'last_close'].values[0],2)
+        ltc_current_close, ltc_last_close = get_close_values(closePrices, 'ltc')
         ltc_close = "${:,.2f}".format(ltc_current_close)
-        delta_ltc = round(ltc_current_close - ltc_last_close,2)
-        
+        delta_ltc = round(ltc_current_close - ltc_last_close, 2)
+
         # LINK KPI
-        link_current_close = round(closePrices.loc[closePrices['symbol'] == 'link', 'current_close'].values[0],2)
-        link_last_close = round(closePrices.loc[closePrices['symbol'] == 'link', 'last_close'].values[0],2)
+        link_current_close, link_last_close = get_close_values(closePrices, 'link')
         link_close = "${:,.2f}".format(link_current_close)
-        delta_link = round(link_current_close - link_last_close,2)
+        delta_link = round(link_current_close - link_last_close, 2)
         
         statusColumn, btcColumn, ethColumn, ltcColumn, linkColumn , moreColumn = st.columns([1.,1,0.9,0.7,0.7,0.2])
 
@@ -178,7 +184,8 @@ while True:
 
         # Read the account info from the CSV file
         accountInfo = pd.read_csv('Data/accountInfo.csv', parse_dates=['timestamp'])
-
+        accountInfo = accountInfo.tail(100)
+        
         # Define a function to handle missing values
         def get_previous_value(column):
             return column.iloc[-2] if len(column) >= 2 else 0.0
@@ -277,8 +284,12 @@ while True:
 
             with donutContainer:
 
-                # Read live data from 'asset.csv' file
-                asset_data = pd.read_csv('Data/asset.csv')
+                try:
+                    asset_data = pd.read_csv('Data/asset.csv')
+                except pd.errors.EmptyDataError:
+                    # Create an empty DataFrame with headers
+                    columns = ['Symbol', 'Quantity', 'Price', 'Market Value', 'Total P&L']
+                    asset_data = pd.DataFrame(columns=columns)
 
                 # Convert the 'cash' value to float
                 cash_value = float(cash_data.replace('$', '').replace(',', ''))
@@ -310,7 +321,7 @@ while True:
                 )
 
                 st.markdown("<p style='text-align:center'>Your Portfolio</p>", unsafe_allow_html=True)
-
+                
                 # Update config to hide the fullscreen button
                 st.plotly_chart(fig, config={'displayModeBar': False})
 
@@ -328,18 +339,31 @@ while True:
                     # Handle the error, and create an empty DataFrame
                     empty_data = pd.DataFrame(columns=['Symbol', 'Quantity', 'Market Value'])
                     st.table(empty_data)
-
-        recentOrderContainer = st.container(border=True)
-
-        with recentOrderContainer:
                 
-            # Read data from 'Data/transactions.csv' into a DataFrame
-            transactions_data = pd.read_csv('Data/transactions.csv')
+                st.caption("The portfolio diagram illustrates your cash position and asset distribution.")
 
-            # Display the last 5 rows of the DataFrame
-            last_5_transactions = transactions_data.tail(5)
-            st.markdown("Latest transactions")
-            st.table(last_5_transactions)
+        info , order = st.columns([0.5,1])
+        
+        with info:
+
+            infoContainer = st.container(border=True)
+
+            with infoContainer:
+                st.image(info_image, width=405, use_column_width=False)
+
+        with order:
+
+            recentOrderContainer = st.container(border=True)
+
+            with recentOrderContainer:
+                    
+                # Read data from 'Data/transactions.csv' into a DataFrame
+                transactions_data = pd.read_csv('Data/transactions.csv')
+
+                # Display the last 5 rows of the DataFrame
+                last_5_transactions = transactions_data.tail(5)
+                st.markdown("Latest transactions")
+                st.table(last_5_transactions)
 
         # Wait for 10 seconds before the next iteration
         time.sleep(1)
