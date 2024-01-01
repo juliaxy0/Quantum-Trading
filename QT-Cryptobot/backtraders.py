@@ -23,22 +23,21 @@ class MyStrategy(bt.Strategy):
         #     self.sell()
         #     print(f"Sell Signal! Timestamp: {timestamp}, Close Price: {close_price}")
 
-class MyStrategy1(bt.Strategy):
+class SMA(bt.Strategy):
 
     def __init__(self):
         # Keep a reference to the "close" line in the data[0] dataseries
         self.dataclose = self.datas[0].close
 
-    # def next(self):
+    def next(self):
 
-    #     # Print data
-    #     timestamp = bt.num2date(self.data.datetime[0]).strftime('%Y-%m-%d %H:%M:%S')
+        # Print data
+        timestamp = bt.num2date(self.data.datetime[0]).strftime('%Y-%m-%d %H:%M:%S')
 
 
-    #     if self.dataclose[0] < self.dataclose[-1]:
-    #         if self.dataclose[-1] < self.dataclose[-2]:
-    #             if self.dataclose[-2] < self.dataclose[-3]:
-    #                 self.buy()
+        if self.dataclose[0] < self.dataclose[-1]:
+            if self.dataclose[-1] < self.dataclose[-2]:
+                self.buy()
                 # print(f"Buy Signal! Timestamp: {timestamp}, Close Price: {self.dataclose}")
             
         # elif sell_signal:
