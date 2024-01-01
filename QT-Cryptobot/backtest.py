@@ -7,11 +7,10 @@ import vectorbt as vbt
 
 class backtestClass:
 
-    @staticmethod
-    def start_backtest(self, start, strategy):
+
+    def start_backtest(self, start_date, strategy):
 
         try:
-            start_date = start
 
             # Prepare data
             btc_data = pd.read_csv('backtestingData/BTCUSD.csv', parse_dates=['timestamp'], index_col='timestamp')
@@ -40,9 +39,9 @@ class backtestClass:
                 ltc_data = ltc_data[~ltc_data.index.duplicated(keep='first')]
             ltc_data_resampled = ltc_data.resample('T').ffill()
             ltc_data_resampled = ltc_data_resampled.loc[start_date:]
-            link_close = ltc_data_resampled.get('close')
+            ltc_close = ltc_data_resampled.get('close')
 
-            comb_close = pd.concat([btc_data, eth_data, link_data, ltc_data], axis=1, keys=['BTC/USD', 'ETH/USD', 'LINK/USD', 'LTC/USD'], names=['symbol'])
+            comb_close = pd.concat([btc_close, eth_close, link_close, ltc_close], axis=1, keys=['BTC/USD', 'ETH/USD', 'LINK/USD', 'LTC/USD'], names=['symbol'])
             comb_close.vbt.drop_levels(-1, inplace=True)
 
             # Call the corresponding strategy based on the value of strategy
@@ -51,10 +50,10 @@ class backtestClass:
             elif strategy == "RSI":
                 entries, exits = self.RSI(comb_close, rsi_window=14, entry=70, exit=30)
             elif strategy == "MACD":
-                entries, exits = self.MACD(comb_close, volume_col='volume', entry_threshold=0, exit_threshold=0)
+                entries, exits = self.MACD(comb_close)
             elif strategy == "BB":
                 entries, exits = self.BB(comb_close, window=14, entry_z_score=-1, exit_z_score=1)
-            elif strategy == "MACD_RSI":
+            elif strategy == "MACD RSI":
                 entries, exits = self.MACD_RSI(comb_close, 14, 30, 70)
             else:
                 # Handle the case when an invalid strategy is provided
@@ -63,13 +62,51 @@ class backtestClass:
             pf_kwargs = dict(size=np.inf, fees=0.001, freq='1D')
             pf = vbt.Portfolio.from_signals(comb_close, entries, exits, **pf_kwargs)
 
-            mean_return = pf.total_return().groupby('symbol').mean()
-            mean_return_df = mean_return.reset_index().set_index('symbol')
-            
-            return mean_return_df
+            max_return = pf.total_return().groupby('symbol').max()
+            max_return_df = max_return.reset_index().set_index('symbol')
 
+            return max_return_df
+        
         except Exception as e:
                 print(f"Error backtesting datas: {e}")
+
+    def backtest_indv(self, symbol, start_date, strategy):
+
+        try:
+
+            # Prepare data
+            btc_data = pd.read_csv(f'backtestingData/{symbol}.csv', parse_dates=['timestamp'], index_col='timestamp')
+            if btc_data.index.duplicated().any():
+                btc_data = btc_data[~btc_data.index.duplicated(keep='first')]
+            btc_data_resampled = btc_data.resample('T').ffill()
+            btc_data_resampled = btc_data_resampled.loc[start_date:]
+            btc_close = btc_data_resampled.get('close')
+
+            # Call the corresponding strategy based on the value of strategy
+            if strategy == "SMA":
+                entries, exits = self.SMA(btc_close, fast=10, slow=20)
+            elif strategy == "RSI":
+                entries, exits = self.RSI(btc_close, rsi_window=14, entry=70, exit=30)
+            elif strategy == "MACD":
+                entries, exits = self.MACD(btc_close)
+            elif strategy == "BB":
+                entries, exits = self.BB(btc_close, window=14, entry_z_score=-1, exit_z_score=1)
+            elif strategy == "MACD RSI":
+                entries, exits = self.MACD_RSI(btc_close, 14, 30, 70)
+            else:
+                # Handle the case when an invalid strategy is provided
+                print(f"Invalid strategy: {strategy}")
+
+            pf_kwargs = dict(size=np.inf, fees=0.001, freq='1D')
+            pf = vbt.Portfolio.from_signals(btc_close, entries, exits, **pf_kwargs)
+
+            stats = pf.stats()
+            stats = "\n".join([f"{key}: {value}" for key, value in stats.items()])
+
+            return stats
+        
+        except Exception as e:
+                print(f"Error backtesting {symbol}: {e}")
 
 ################################## Stratergy
 

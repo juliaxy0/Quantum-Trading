@@ -206,7 +206,7 @@ class alpacaClass:
             file.write(header)
 
         # Empty the profit file
-        file_path = 'Data\profit.csv'
+        file_path = 'Data/profit.csv'
         header = "Robot Name,Profit,Timestamp\n"
         with open(file_path, 'w') as file:
             file.write(header)

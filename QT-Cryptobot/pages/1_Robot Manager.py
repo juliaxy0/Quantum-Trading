@@ -27,6 +27,9 @@ data = alpaca_user.fetch_all_robot()
 # Form to create a robot
 with form_column:
 
+        # TODO: add these to robot
+        # include_sentiment = st.checkbox("Include Sentiment Analysis")
+        # include_prediction = st.checkbox("Include Price Prediction")
 
     formContainer = st.container(border=True)
 

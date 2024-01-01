@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from stock import Stock
 import numpy as np
 import pandas as pd
-import yfinance as yf
+# import yfinance as yf
 
 st.set_page_config(layout="wide", initial_sidebar_state="expanded")
 st.title('Detailed Prediction Analysis')
