@@ -5,25 +5,19 @@ import time
 import pandas as pd
 import os
 
-app = FastAPI(title="Quantum Trading Sentiment Analysis API")
+sentiment = FastAPI(title="Quantum Trading Sentiment Analysis API")
 
 # Sentiment Analysis for each crypto
-@app.on_event("startup")
+@sentiment.on_event("startup")
 def startup_event():
     # Start the continuous task in a separate thread on application startup
     continuous_thread = threading.Thread(target=all_crypto_sa, daemon=True)
     continuous_thread.start()
 
 # Endpoints
-@app.get('/')
+@sentiment.get('/')
 async def root():
         return {'text':'Welcome to QuantumTrading Sentiment Analysis API'}
-
-# Return crypto analysis result
-@app.get("/check_sentiment/{crypto}")
-async def read_item(crypto: str):
-    result = check_sentiment(crypto)
-    return result
 
 def all_crypto_sa():
 

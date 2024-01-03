@@ -37,6 +37,7 @@ class alpacaClass:
         _self.get_initial_btc_data()
         _self.get_initial_eth_data()
         _self.get_initial_ltc_data()
+        _self.get_initial_link_data()
         _self.getAccountDetails()
 
     #################################### home.py
@@ -217,7 +218,7 @@ class alpacaClass:
     def get_initial_btc_data(_self):
 
         # Calculate the start and end times for the initial data (e.g., 30 minutes ago)
-        initial_start_time = datetime.utcnow() - timedelta(minutes=10)
+        initial_start_time = datetime.utcnow() - timedelta(minutes=700)
         initial_end_time = datetime.utcnow()
 
         # Creating request object for initial data
@@ -291,7 +292,7 @@ class alpacaClass:
     def get_initial_eth_data(_self):
 
         # Calculate the start and end times for the initial data (e.g., 30 minutes ago)
-        initial_start_time = datetime.utcnow() - timedelta(minutes=30)
+        initial_start_time = datetime.utcnow() - timedelta(minutes=700)
         initial_end_time = datetime.utcnow()
 
         # Creating request object for initial data
@@ -367,7 +368,7 @@ class alpacaClass:
     def get_initial_ltc_data(_self):
 
         # Calculate the start and end times for the initial data (e.g., 30 minutes ago)
-        initial_start_time = datetime.utcnow() - timedelta(minutes=50)
+        initial_start_time = datetime.utcnow() - timedelta(minutes=700)
         initial_end_time = datetime.utcnow()
 
         # Creating request object for initial data
@@ -443,7 +444,7 @@ class alpacaClass:
     def get_initial_link_data(_self):
 
         # Calculate the start and end times for the initial data (e.g., 30 minutes ago)
-        initial_start_time = datetime.utcnow() - timedelta(minutes=50)
+        initial_start_time = datetime.utcnow() - timedelta(minutes=700)
         initial_end_time = datetime.utcnow()
 
         # Creating request object for initial data
@@ -653,16 +654,16 @@ class alpacaClass:
                     sell_condition = False
 
                     # Execute the corresponding strategy method
-                    if strategy == "MACD RSI":
-                        buy_condition, sell_condition = stratergiesClass.macd_rsi(coin,current_data)
+                    if strategy == "DecisionMaker":
+                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,current_data)
                     elif strategy == "SMA":
-                        buy_condition, sell_condition = stratergiesClass.sma_strategy(coin,current_data)
+                        buy_condition, sell_condition = stratergiesClass.sma_strategy(current_data)
                     elif strategy == "RSI":
-                        buy_condition, sell_condition = stratergiesClass.rsi_strategy(coin,current_data)
+                        buy_condition, sell_condition = stratergiesClass.rsi_strategy(current_data)
                     elif strategy == "MACD":
-                        buy_condition, sell_condition = stratergiesClass.macd_strategy(coin,current_data)
+                        buy_condition, sell_condition = stratergiesClass.macd_strategy(current_data)
                     elif strategy == "BB":
-                        buy_condition, sell_condition = stratergiesClass.bb_strategy(coin,current_data)
+                        buy_condition, sell_condition = stratergiesClass.bb_strategy(current_data)
 
                     # Execute buy and sell orders based on signals
                     if buy_condition:

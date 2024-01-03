@@ -3,9 +3,90 @@ import os
 import pandas as pd
 
 class stratergiesClass:
+
+    def __init__(self):
+        self.weights = {
+            'macd_rsi': 0.5,
+            'sentiment': 0.25,
+            'prediction': 0.25,
+        }
+
+    ################################## CUSTOM STRATERGY
+    
+    @staticmethod
+    def DecisionMaker(coin,current_data):
+        try:
+
+            # Get all components
+            buy_condition, sell_condition = stratergiesClass.macd_rsi(current_data)
+            sentiment_score = stratergiesClass.check_sentiment(coin)
+            ml_prediction = stratergiesClass.check_prediction(coin)
+
+            # Calculate based on weightage
+            weighted_score = stratergiesClass.calculate_weighted_score(buy_condition, sell_condition, sentiment_score, ml_prediction)
+
+            if buy_condition: 
+                if weighted_score >= 0.5:
+                    return True, False
+                else:
+                    return False, False
+            if sell_condition: 
+                if weighted_score >= 0.5:
+                    return False, True
+                else:
+                    return False, False
+
+        except Exception as e:
+            # Handle the exception here, you can print an error message or log it
+            print(f"Error in Decision Maker: {e}")
+
+            # Return default values or handle the error as needed
+            return False, False
+
+    
+    def calculate_weighted_score(self, buy_condition, sell_condition, sentiment_score, ml_prediction):
+        
+        try:
+
+            # Check if it's a buy condition
+            if buy_condition:
+                macd_rsi_weighted_score = self.weights['macd_rsi']
+                sentiment_weighted_score = self.weights['sentiment']
+                prediction_weighted_score = self.weights['prediction']
+
+                # Calculate the weighted score for the buy condition
+                weighted_score = (
+                    macd_rsi_weighted_score * 1 +  # Assuming buy_condition is True for MACD/RSI
+                    sentiment_weighted_score * (sentiment_score >= 5) +
+                    prediction_weighted_score * (ml_prediction == 1)
+                )
+            # Check if it's a sell condition
+            elif sell_condition:
+                macd_rsi_weighted_score = self.weights['macd_rsi']
+                sentiment_weighted_score = self.weights['sentiment']
+                prediction_weighted_score = self.weights['prediction']
+
+                # Calculate the weighted score for the sell condition
+                weighted_score = (
+                    macd_rsi_weighted_score * 0 +  # Assuming buy_condition is False for MACD/RSI
+                    sentiment_weighted_score * (sentiment_score <= 5) +
+                    prediction_weighted_score * (ml_prediction == 0)
+                )
+            else:
+                # Default to 0 if neither buy_condition nor sell_condition is true
+                weighted_score = 0
+
+            return weighted_score
+
+        except Exception as e:
+            # Handle the exception here, you can print an error message or log it
+            print(f"Error in calculating weighted score: {e}")
+
+            # Return default values or handle the error as needed
+            return False, False
         
     @staticmethod
-    def macd_rsi(crypto,current_data):
+    def macd_rsi(current_data):
 
         try:
 
@@ -32,7 +113,7 @@ class stratergiesClass:
 
         except Exception as e:
             # Handle the exception here, you can print an error message or log it
-            print(f"Error in SentimentSync: {e}")
+            print(f"Error in MACD RSI: {e}")
 
             # Return default values or handle the error as needed
             return False, False
@@ -63,7 +144,38 @@ class stratergiesClass:
 
         except Exception as e:
             # Print or log the exception details
-            print(f"Exception: {e}")
+            print(f"Exception in check sentiment: {e}")
+
+    @staticmethod
+    def check_prediction(symbol):
+        try:
+            # Specify the file path
+            csv_file_path = 'E:/QuantumTrading/QT-Prediction-API/prediction.csv'
+
+            # Check if the file exists
+            if os.path.isfile(csv_file_path):
+                # Read the CSV file into a DataFrame
+                prediction_df = pd.read_csv(csv_file_path)
+
+                # Filter the DataFrame based on the symbol
+                symbol_filter = prediction_df['symbol'] == symbol
+
+                # Check if the symbol is present in the DataFrame
+                if symbol_filter.any():
+                    # Retrieve the prediction value for the specified symbol
+                    prediction_value = prediction_df.loc[symbol_filter, 'prediction'].values[0]
+                    return prediction_value
+                else:
+                    print(f"Symbol '{symbol}' not found in the prediction.csv file.")
+                    return None
+            else:
+                print("Prediction file not found.")
+                return None
+        except Exception as e:
+            print(f"An error occurred while checking prediction: {e}")
+            return None
+        
+    ################################## BASIC STRATERGY
 
     @staticmethod
     def sma_strategy(current_data):
