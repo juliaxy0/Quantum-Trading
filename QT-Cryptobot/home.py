@@ -88,13 +88,13 @@ while True:
                 with status1:
                     st.markdown("")
                     st.image(alpaca_image, width=50, use_column_width=False)
-                    st.markdown("")
 
                 with status2:
 
-                    options = ["Paper Trading", "Live Trading"]
-                    selected_option = st.selectbox("Select trading mode:", options, index=options.index("Paper Trading"), key = datetime.utcnow() )
-                    st.subheader("")
+                    options = ["Paper Trading"]
+                    selected_option = st.selectbox("Trading mode:", options, index=options.index("Paper Trading"), key = datetime.utcnow() )
+
+                st.caption("Powered by Alpaca Brokerage")
 
                 
         with btcColumn:

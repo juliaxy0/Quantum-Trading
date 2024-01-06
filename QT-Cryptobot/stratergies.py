@@ -122,7 +122,7 @@ class stratergiesClass:
     def check_sentiment(crypto):
         try:
             # Check if the file exists
-            file_path = 'E:/QuantumTrading/QT-Sentiment-API/sentimentData/{}.csv'.format(crypto)
+            file_path = 'E:/QuantumTrading/QT-API/sentimentData/{}.csv'.format(crypto)
             if not os.path.isfile(file_path):
                 print("Error {}: File does not exist.".format(crypto))
 
@@ -150,7 +150,7 @@ class stratergiesClass:
     def check_prediction(symbol):
         try:
             # Specify the file path
-            csv_file_path = 'E:/QuantumTrading/QT-Prediction-API/prediction.csv'
+            csv_file_path = 'E:/QuantumTrading/QT-API/predictionData/prediction.csv'
 
             # Check if the file exists
             if os.path.isfile(csv_file_path):

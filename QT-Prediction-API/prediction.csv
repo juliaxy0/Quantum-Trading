@@ -1,5 +1,0 @@
-symbol,prediction,accuracy_test,kv_accuracy
-btc,0,0.875,0.7643 +/- 0.0484
-eth,0,0.75,0.7107 +/- 0.0457
-link,0,0.875,0.7643 +/- 0.0484
-ltc,0,1.0,0.8679 +/- 0.0087

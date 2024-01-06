@@ -104,7 +104,7 @@ with placeholder.container():
                     st.error("Insufficient asset. Cannot submit order.")
             st.caption("*Min quantity for LTC/USD and LINK/USD is 1")
     
-    st.info("The OHLC graph is intended solely for self-analysis purposes. Please refer the top columns for pricing information", icon="ℹ️")
+    st.info("The OHLC drawboard is provided by TradingView, intended solely for self-analysis purposes. Please refer the top columns for Alpaca's pricing information", icon="ℹ️")
 
     # How we scale our sentiment and ML analysis explanation to user
     eduContainer = st.container(border=True)
@@ -182,7 +182,7 @@ while True:
 
         try:
             btc_sentiment_score = stratergiesClass.check_sentiment('BTC')
-            btc_ml_result = stratergiesClass.check_sentiment('BTC')
+            btc_ml_result = stratergiesClass.check_prediction('btc')
         except Exception as e:
             print(f"Error getting BTC sentimen and ml analysis : {e}")
 
@@ -207,7 +207,7 @@ while True:
 
         try:
             eth_sentiment_score = stratergiesClass.check_sentiment('ETH')
-            eth_ml_result = stratergiesClass.check_sentiment('ETH')
+            eth_ml_result = stratergiesClass.check_prediction('eth')
         except Exception as e:
             print(f"Error getting ETH sentimen and ml analysis : {e}")
 
@@ -232,7 +232,7 @@ while True:
 
         try:
             link_sentiment_score = stratergiesClass.check_sentiment('LINK')
-            link_ml_result = stratergiesClass.check_sentiment('LINK')
+            link_ml_result = stratergiesClass.check_prediction('link')
         except Exception as e:
             print(f"Error getting LINK sentimen and ml analysis : {e}")
 
@@ -257,7 +257,7 @@ while True:
 
         try:
             ltc_sentiment_score = stratergiesClass.check_sentiment('LTC')
-            ltc_ml_result = stratergiesClass.check_sentiment('LTC')
+            ltc_ml_result = stratergiesClass.check_prediction('ltc')
         except Exception as e:
             print(f"Error getting LTC sentimen and ml analysis : {e}")
 

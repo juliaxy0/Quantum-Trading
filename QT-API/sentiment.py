@@ -83,12 +83,8 @@ class sentimentAnalysisClass:
         # Summarise all Articles
         summaries = self.summarize(articles)
 
-        # Adding Sentiment Analysis
-        model_name = "distilbert-base-uncased-finetuned-sst-2-english"
-        revision = "af0f99b"
-
         # Create the sentiment analysis pipeline
-        sentiment = pipeline("sentiment-analysis", model=model_name, revision=revision)
+        sentiment = pipeline("text-classification", model="mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis")
         scores = sentiment(summaries)
         
         # Exporting Results
@@ -97,12 +93,12 @@ class sentimentAnalysisClass:
         # Create DataFrame without the first row
         df = pd.DataFrame(final_output[1:], columns=final_output[0])
 
-        csv_file_path = 'E:/QuantumTrading/QT-Sentiment-API/sentimentData/{}.csv'.format(self.crypto)
+        csv_file_path = 'E:/QuantumTrading/QT-API/sentimentData/{}.csv'.format(self.crypto)
 
         # Check if the file exists
         if not os.path.isfile(csv_file_path):
             # If the file doesn't exist, create it with the specified header
-            df.to_csv(csv_file_path, index=False, header=['Ticker', 'Summary', 'Sentiment','Sentiment Score', 'URL'])
+            df.to_csv(csv_file_path, index=False, header=['Ticker', 'Summary', 'Sentiment', 'Sentiment Score', 'URL'])
         else:
-            # If the file exists, append the DataFrame without headers
-            df.to_csv(csv_file_path, mode='a', header=False, index=False)
+            # If the file exists, replace its content with the new DataFrame
+            df.to_csv(csv_file_path, mode='w', index=False, header=['Ticker', 'Summary', 'Sentiment', 'Sentiment Score', 'URL'])

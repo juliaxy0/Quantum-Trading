@@ -21,7 +21,7 @@ class PredictionClass:
             self.data = self.data[~self.data.index.duplicated(keep='first')]
             self.data = self.data.resample('T').ffill()
             self.data = self.data.drop(columns=['trade_count', 'vwap'])
-            self.data = self.data.head(500)
+            self.data = self.data.tail(500)
             self.crypto = crypto
             self.scaler = StandardScaler()
         except Exception as e:
@@ -93,7 +93,7 @@ class PredictionClass:
             prediction, accuracy_test, cross_val_mean, cross_val_std = self.predict()
             if prediction is not None:
                 # Create or read the prediction.csv file
-                csv_file_path = 'E:/QuantumTrading/QT-Prediction-API/prediction.csv'
+                csv_file_path = 'E:/QuantumTrading/QT-API/predictionData/prediction.csv'
                 if not os.path.isfile(csv_file_path):
                     prediction_df = pd.DataFrame(columns=['symbol', 'prediction', 'accuracy_test', 'kv_accuracy'])
                 else:

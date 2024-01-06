@@ -676,6 +676,7 @@ class alpacaClass:
                         
                         if last_row_cash >= cost:
                             _self.buy(coin, quantity, robot_name)
+                            # Update quantity bought by robot
                             robotClass.updateBought(quantity,robot_name)
                             print(f"{robot_name} bought")
                         else:
