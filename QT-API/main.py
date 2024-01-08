@@ -3,9 +3,12 @@ from sentiment import sentimentAnalysisClass
 from prediction import PredictionClass
 import threading
 import time
+
+# MongoDB
 from dotenv import dotenv_values
 from pymongo import MongoClient
-
+from app.routers.user import user
+from app.routers.robot import robot
 
 ####################### Sentiment API
 
@@ -106,3 +109,10 @@ def startup_db_client():
 @database.on_event("shutdown")
 def shutdown_db_client():
     database.mongodb_client.close()
+
+@database.get('/')  
+async def root(): 
+        return {'text':'Welcome to QuantumTrading Database API'} 
+
+database.include_router(user, tags=["user"], prefix="/user") 
+database.include_router(robot, tags=["robot"], prefix="/user/{username}/robot")

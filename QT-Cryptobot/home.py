@@ -12,13 +12,18 @@ from PIL import Image
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
-st.title('Welcome back Julia!')
+# Get parameter from link for auth
+username_param = st.experimental_get_query_params().get("username", [""])[0]
+
+welcome_string = f"Welcome back {username_param}!"
+st.title(welcome_string)
 
 ############################################# Alpaca Dashboard ##########################################
 
+
 # Create alpaca user
-alpaca_user = alpacaClass()
-robot_user = robotClass()
+alpaca_user = alpacaClass(username_param)
+robot_user = robotClass(username_param)
 
 # creating a single-element container
 placeholder = st.empty()

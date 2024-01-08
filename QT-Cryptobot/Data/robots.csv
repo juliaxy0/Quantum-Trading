@@ -1,6 +1,9 @@
 Robot Name,Symbol,Quantity,Stratergy,Status,Bought
-robot1,ETH/USD,0.5,RSI,Running,23.0
-robot2,DOT/USD,0.03,MACD&RSI,Running,0.0
-robot3,ETH/USD,0.03,MACD&RSI,Stopped,0.0
-robot4,LINK/USD,0.03,MACD&RSI,Stopped,0.0
-robot5,LTC/USD,0.03,MACD&RSI,Stopped,0.0
+robot155,BTC/USD,0.06,MA&BOL,Stopped,0.0
+robot522,LINK/USD,0.03,MACD&RSI,Stopped,0.0
+robot1535,ETH/USD,0.03,MACD&RSI,Stopped,0.0
+robot14,LTC/USD,0.03,MACD&RSI,Stopped,0.0
+robot15,BTC/USD,0.03,RSI,Stopped,0.0
+robot1kuu,LINK/USD,0.03,RSI,Stopped,0.0
+robot1455,BTC/USD,0.03,Stochastic,Stopped,0.0
+robot1455wwww,BTC/USD,0.03,MACD,Stopped,0.0

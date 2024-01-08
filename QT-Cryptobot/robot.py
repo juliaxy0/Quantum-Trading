@@ -1,6 +1,7 @@
 from datetime import datetime
 import pandas as pd
 import os
+import requests
 
 # Alpaca
 from alpaca.trading.client import TradingClient
@@ -8,19 +9,38 @@ from alpaca.data.historical import CryptoHistoricalDataClient
 from alpaca.data.timeframe import TimeFrame
 from alpaca.data.requests import CryptoBarsRequest
 
-# Configuration
-from config import *
-
 class robotClass:
 
-    def __init__(_self):
+    def __init__(_self, username):
     
+        # Getting user's credentials
+        _self.username = username
+        api_key, secret_key = _self.get_user_by_username(_self.username)
+        API_KEY = api_key
+        SECRET_KEY = secret_key
+
         # Alpaca Trading Client
         _self.trading_client = TradingClient(API_KEY,SECRET_KEY,paper=True)
         _self.client = CryptoHistoricalDataClient()
 
+    def get_user_by_username(_self,username):
+        # Replace the URL with your actual API endpoint
+        api_url = f"http://127.0.0.1:8000/user/{username}"
+        
+        # Make a GET request to fetch user data
+        response = requests.get(api_url)
+        
+        if response.status_code == 200:
+            user_data = response.json()
+            api_key = user_data.get("api_key")
+            secret_key = user_data.get("secret_key")
+            return api_key, secret_key
+        else:
+            print(f"Error fetching user data. Status code: {response.status_code}, Details: {response.text}")
+            return None
+        
     # Function to fetch data and insert into robots.csv
-    def create_robot(_self, symbol, quantity, robot_name, stratergy, status):
+    def create_robot(_self, symbol, quantity, robot_name, strategy, status):
         
         try:
 
@@ -28,10 +48,10 @@ class robotClass:
 
             # Create a DataFrame with the provided data
             robot_data = pd.DataFrame({
-                'Robot Name': [robot_name],
+                'RobotName': [robot_name],
                 'Symbol': [symbol],
                 'Quantity': [quantity],
-                'Stratergy': [stratergy],
+                'Strategy': [strategy],
                 'Status': [status],
                 'Bought': [0.0]
             })
@@ -46,7 +66,7 @@ class robotClass:
             # Check if a row with the same values already exists
             if not existing_data[
                 ((existing_data['Symbol'] == symbol) &
-                (existing_data['Stratergy'] == stratergy)) |
+                (existing_data['Stratergy'] == strategy)) |
                 (existing_data['Robot Name'] == robot_name)
             ].empty:
                 print("Error: Robot with the same parameters already exists.")
@@ -54,6 +74,37 @@ class robotClass:
 
             # Append the new data to the 'robots.csv' file or create a new file
             robot_data.to_csv(filename, mode='a', header=not os.path.exists(filename), index=False)
+            print("Success: Robot successfully created locally.")
+
+            # Creating in MongoDB
+            url = f"http://127.0.0.1:8000/user/{_self.username}/robot/"  # Adjust the URL to include the user ID
+
+            # Data for the new robot
+            new_robot_data = {
+                "RobotName": robot_name,
+                "Symbol": symbol,
+                "Quantity": quantity,
+                "Strategy": strategy,
+                "Status": status,
+                "Bought": 0.0,
+            }
+
+            try:
+                # Make a POST request to create a new robot
+                response = requests.post(url, json=new_robot_data)
+                response.raise_for_status()  # Raise an exception for HTTP errors
+
+                # Check the response
+                if response.status_code == 201:
+                    print("Robot created in MongoDB successfully!")
+                    print("Created Robot: True")
+                else:
+                    print(f"Failed to create robot with status code {response.status_code}")
+                    print("Response text:", response.text)
+
+            except requests.exceptions.RequestException as e:
+                print(f"Error making the request: {e}")
+
             
             ########### profit.csv
 
@@ -75,6 +126,50 @@ class robotClass:
             print(f"Error creating robot: {e}")
             return False
     
+    ############ STEPPED HERE TADI
+    @staticmethod
+    def deleteRobot(data, selected_robot):
+        # Delete the selected robot's row
+        data = data[data['Robot Name'] != selected_robot]
+        # Save the updated data to the CSV file
+        data.to_csv('Data/robots.csv', index=False)
+
+    def updateRobot(_self, data, selected_robot, new_quantity, new_strategy, new_status):
+        # Update the data
+        data.loc[data['Robot Name'] == selected_robot, 'Quantity'] = new_quantity
+        data.loc[data['Robot Name'] == selected_robot, 'Stratergy'] = new_strategy
+        data.loc[data['Robot Name'] == selected_robot, 'Status'] = new_status
+
+        # Save the updated data to the CSV file
+        data.to_csv('Data/robots.csv', index=False)
+        print("Robot data updated localy.")
+
+        # Update robot on mongodb
+        url = f"http://127.0.0.1:8000/user/{_self.username}/robot/{selected_robot}"  # Replace with the actual URL of your FastAPI server
+
+        # Data for the robot update
+        robot_update_data = {
+            "Quantity": new_quantity,
+            "Stratergy": new_strategy,
+            "Status": new_status,
+        }
+
+        try:
+            # Make a PUT request to update the robot
+            response = requests.put(url, json=robot_update_data)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+
+            # Check the response
+            if response.status_code == 200:
+                print("Robot detail updated to MongoDB successfully!")
+                print("Updated Robot:", response.json())
+            else:
+                print(f"Failed to update robot detail with status code {response.status_code}")
+                print("Response text:", response.text)
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error making the update detail request: {e}")
+
     @staticmethod
     def updateBought(quantity, robot_name):
         try:
@@ -86,12 +181,44 @@ class robotClass:
 
             # Check if the robot exists in the data
             if not robot_row.empty:
+
+                # Get the index of the row
+                row_index = robot_row.index[0]
+
                 # Update the 'Bought' column by adding the given quantity
                 robots_data.loc[robot_row.index, 'Bought'] += quantity
 
+                # Get the new value of the 'Bought' column
+                new_bought_value = robots_data.loc[row_index, 'Bought']
+
                 # Save the updated data back to the CSV file
                 robots_data.to_csv('Data/robots.csv', index=False)
-                print(f"Bought updated for {robot_name}.")
+                print(f"Bought updated for {robot_name} locally.")
+
+                url = "http://127.0.0.1:8000/robot/"  # Replace with the actual URL of your FastAPI server
+                robot_name_to_update = robot_name  # Replace with the RobotName of the robot you want to update
+
+                # Data for the robot update
+                robot_update_data = {
+                    "Bought": new_bought_value
+                }
+
+                try:
+                    # Make a PUT request to update the robot
+                    response = requests.put(f"{url}/{robot_name_to_update}", json=robot_update_data)
+                    response.raise_for_status()  # Raise an exception for HTTP errors
+
+                    # Check the response
+                    if response.status_code == 200:
+                        print("Robot bought updated in MongoDB successfully!")
+                        print("Updated Robot:", response.json())
+                    else:
+                        print(f"Failed to update robot bought with status code {response.status_code}")
+                        print("Response text:", response.text)
+
+                except requests.exceptions.RequestException as e:
+                    print(f"Error making the bought request: {e}")
+
             else:
                 print(f"Robot '{robot_name}' not found.")
 

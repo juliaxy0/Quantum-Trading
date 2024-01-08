@@ -2,9 +2,7 @@ from datetime import datetime, timedelta, timezone
 import pandas as pd
 import os
 import csv
-
-# Config 
-from config import *
+import requests
 
 # Alpaca
 from alpaca.trading.client import TradingClient
@@ -23,8 +21,14 @@ from robot import robotClass
 
 class alpacaClass:
 
-    def __init__(_self):
+    def __init__(_self, username):
         
+        # Getting user's credentials
+        _self.username = username
+        api_key, secret_key = _self.get_user_by_username(_self.username)
+        API_KEY = api_key
+        SECRET_KEY = secret_key
+
         # Alpaca Trading Client
         _self.trading_client = TradingClient(API_KEY, SECRET_KEY, paper=True)
         _self.client = CryptoHistoricalDataClient()
@@ -41,7 +45,23 @@ class alpacaClass:
         _self.getAccountDetails()
 
     #################################### home.py
-  
+    
+    def get_user_by_username(_self,username):
+        # Replace the URL with your actual API endpoint
+        api_url = f"http://127.0.0.1:8000/user/{username}"
+        
+        # Make a GET request to fetch user data
+        response = requests.get(api_url)
+        
+        if response.status_code == 200:
+            user_data = response.json()
+            api_key = user_data.get("api_key")
+            secret_key = user_data.get("secret_key")
+            return api_key, secret_key
+        else:
+            print(f"Error fetching user data. Status code: {response.status_code}, Details: {response.text}")
+            return None
+    
     def continuousMethods(_self):
         _self.fetch_real_time_btc_data()
         _self.fetch_real_time_eth_data()

@@ -8,14 +8,17 @@ from PIL import Image
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
+# Get parameter from link for auth
+username_param = st.experimental_get_query_params().get("username", [""])[0]
+
 ############################################# Real time Dashboard #####################################
 
 # Dashboard title
 st.subheader('Real-time Crypto Analysis and Monitoring')
 
 # Create alpaca user
-alpaca_user = alpacaClass()
-robot_user = robotClass()
+alpaca_user = alpacaClass(username_param)
+robot_user = robotClass(username_param)
 
 # Images of each crypto
 pic2 = Image.open("pics/2.png")

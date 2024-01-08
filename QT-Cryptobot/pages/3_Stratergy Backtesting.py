@@ -9,11 +9,14 @@ from backtest import backtestClass
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
+# Get parameter from link for auth
+username_param = st.experimental_get_query_params().get("username", [""])[0]
+
 st.subheader("Robot Backtesting")
 
 # Create alpaca user
-alpaca_user = alpacaClass()
-robot_user = robotClass()
+alpaca_user = alpacaClass(username_param)
+robot_user = robotClass(username_param)
 backtest_user = backtestClass()
 
 # Empty df

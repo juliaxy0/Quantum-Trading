@@ -7,11 +7,15 @@ import plotly.graph_objects as go
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
+# Get parameter from link for auth
+username_param = st.experimental_get_query_params().get("username", [""])[0]
+
+
 st.subheader("Robot Manager")
 
 # Create alpaca user
-alpaca_user = alpacaClass()
-robot_user = robotClass()
+alpaca_user = alpacaClass(username_param)
+robot_user = robotClass(username_param)
 
 # Use st.columns to create two columns
 view_column, form_column = st.columns([1,0.5])
@@ -55,10 +59,9 @@ with form_column:
 
                 if not selected_robot_data.empty:
 
-                    # Dropdown for new Symbol
-                    symbol_options = ["BTC/USD", "DOT/USD", "ETH/USD", "LINK/USD", "LTC/USD"]
-                    new_symbol = st.selectbox('Symbol', symbol_options, index=symbol_options.index(default_values['Symbol']))
-
+                    # Uneditable Symbol
+                    new_symbol = st.text_input('Symbol', value=default_values['Symbol'], key='symbol', disabled=True)
+                    
                     new_quantity = st.number_input('Quantity', value=float(default_values['Quantity']))
 
                     # Dropdown for new Strategy
@@ -80,15 +83,7 @@ with form_column:
                                 (existing_data['Stratergy'] == new_strategy)).any():
                                 st.error('Error: Robot with the same parameters already exists.')
                             else:
-                                # Update the data
-                                data.loc[data['Robot Name'] == selected_robot, 'Quantity'] = new_quantity
-                                data.loc[data['Robot Name'] == selected_robot, 'Symbol'] = new_symbol
-                                data.loc[data['Robot Name'] == selected_robot, 'Stratergy'] = new_strategy
-                                data.loc[data['Robot Name'] == selected_robot, 'Status'] = new_status
-
-                                # Save the updated data to the CSV file
-                                data.to_csv('Data/robots.csv', index=False)
-
+                                robot_user.updateRobot(data, selected_robot, new_quantity, new_strategy, new_status)
                                 st.success(f'{selected_robot} details updated successfully!')
                     
                     with deleteButton:
