@@ -1,9 +1,3 @@
-Robot Name,Symbol,Quantity,Stratergy,Status,Bought
-robot155,BTC/USD,0.06,MA&BOL,Stopped,0.0
-robot522,LINK/USD,0.03,MACD&RSI,Stopped,0.0
-robot1535,ETH/USD,0.03,MACD&RSI,Stopped,0.0
-robot14,LTC/USD,0.03,MACD&RSI,Stopped,0.0
-robot15,BTC/USD,0.03,RSI,Stopped,0.0
-robot1kuu,LINK/USD,0.03,RSI,Stopped,0.0
-robot1455,BTC/USD,0.03,Stochastic,Stopped,0.0
-robot1455wwww,BTC/USD,0.03,MACD,Stopped,0.0
+Username,Robot Name,Symbol,Quantity,Stratergy,Status,Bought
+juliaxy0,robot1,BTC/USD,0.03,RSI,Running,3.8099999999999996
+juliaxy0,robot12,BTC/USD,0.03,Stochastic,Running,0.0

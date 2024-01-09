@@ -6,11 +6,57 @@ import pandas as pd
 from robot import robotClass
 import plotly.graph_objects as go
 from backtest import backtestClass
+from streamlit_extras.app_logo import add_logo
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
 # Get parameter from link for auth
 username_param = st.experimental_get_query_params().get("username", [""])[0]
+
+add_logo("pics/logo.png")
+
+# st.markdown(
+#     """
+#     <style>
+#     button {
+#         background: none!important;
+#         border: none;
+#         padding: 0!important;
+#         color: grey !important;
+#         text-decoration: none;
+#         cursor: pointer;
+#         border: none !important;
+#     }
+#     button:hover {
+#         text-decoration: none;
+#         color: black !important;
+#     }
+#     button:focus {
+#         outline: none !important;
+#         box-shadow: none !important;
+#         color: black !important;
+#     }
+#     </style>
+#     """,
+#     unsafe_allow_html=True,
+# )
+
+with st.sidebar:
+
+    sidebarContainer = st.empty()
+
+
+    if st.button("Logout"):
+        st.markdown(f'<meta http-equiv="refresh" content="0;URL=http://localhost:8501/">', unsafe_allow_html=True)
+        
+css = '''
+<style>
+    [data-testid='stSidebarNav'] > ul {
+        min-height: 43vh;
+    }
+</style>
+'''
+st.markdown(css, unsafe_allow_html=True)
 
 st.subheader("Robot Backtesting")
 
@@ -27,7 +73,7 @@ ltc_stats = " "
 link_stats = " "
 
 # Use st.columns to create two columns
-form_column, view_column = st.columns([0.6,1])
+form_column, view_column = st.columns([1,0.8])
 
 # Store the previous values of start_date and end_date
 prev_start_date = "01-01-2023"
@@ -39,15 +85,12 @@ with form_column:
     st.markdown("")
 
     with st.form("my_form"):
-        st.subheader("Select backtesting details")
-        st.markdown("")
         start_date = st.text_input("Start Date (DD-MM-YYYY)", key="start_date_input", value=prev_start_date)
         end_date = st.text_input("End Date (DD-MM-YYYY)", key="end_date_input", value=prev_end_date)
-        selected_strategy = st.selectbox("Select Trading Strategy", ["SMA", "MACD", "RSI", "BB","MACD RSI"])
+        selected_strategy = st.selectbox("Select Trading Strategy", ["SMA", "MACD", "RSI", "BB"])
 
-        st.markdown("")
         # Button to fetch historical data
-        if st.form_submit_button("Backtest stratergy"):
+        if st.form_submit_button("Backtest Strategy", type="primary"):
                 # If date has changed
                 if start_date != prev_start_date or end_date != prev_end_date:
                         
@@ -112,21 +155,11 @@ with form_column:
                 # Update previous values
                 prev_start_date = start_date
                 prev_end_date = end_date
-
-                st.success("Backtesting Completed!")
         st.caption("*Backtesting is only applicable to strategies relying on technical analysis.")
 
-with view_column:
+    graphContainer = st.container(border=True)
 
-    st.markdown("")
-
-    meanContainer = st.container(border=True)
-
-    with meanContainer:
-
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["Max return","BTC/USD Statistics","ETH/USD Statistics","LINK/USD Statistics","LTC/USD Statistics" ])
-
-        with tab1:
+    with graphContainer:
 
             # Display mean bar chart  
             fig = go.Figure(go.Bar())
@@ -146,31 +179,36 @@ with view_column:
                 title='Mean Return by Symbol',
                 xaxis=dict(title='Symbol'),
                 yaxis=dict(title='Mean Return'),
+                height=300
             )
 
             # Show the plot
-            st.plotly_chart(fig,use_container_width=True, height=1400)
+            st.plotly_chart(fig,use_container_width=True)
+
+    
+
+with view_column:
+
+    st.markdown("")
+
+    meanContainer = st.container(border=True)
+
+    with meanContainer:
+
+        tab2, tab3, tab4, tab5 = st.tabs(["BTC/USD Statistics","ETH/USD Statistics","LINK/USD Statistics","LTC/USD Statistics" ])
 
         
         with tab2:
-
-            st.markdown("BTC/USD Statistics")
             st.text(btc_stats)
 
         with tab3:
-
-            st.markdown("ETH/USD Statistics")
             st.text(eth_stats)
 
         with tab4:
-
-            st.markdown("LINK/USD Statistics")
             st.text(ltc_stats)
 
 
         with tab5:
-
-            st.markdown("LTC/USD Statistics")
             st.text(link_stats)
         
 # Loop to fetch current minute's data every 10 seconds
@@ -179,6 +217,13 @@ while True:
     # Update real-time data
     alpaca_user.continuousMethods()
     robot_user.updateProfit()
+
+    with sidebarContainer.container():
+    
+        logs = pd.read_csv("logs.csv")
+        logs = logs.tail(5)
+        st.markdown("")
+        st.dataframe(logs, hide_index=True, use_container_width = True)
 
     # Wait for 10 seconds before the next iteration
     time.sleep(1)

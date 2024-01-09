@@ -4,12 +4,31 @@ from alpacas import alpacaClass
 from robot import robotClass
 import time
 import plotly.graph_objects as go
+from streamlit_extras.app_logo import add_logo
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
 # Get parameter from link for auth
 username_param = st.experimental_get_query_params().get("username", [""])[0]
 
+add_logo("pics/logo.png")
+
+with st.sidebar:
+
+    sidebarContainer = st.empty()
+
+
+    if st.button("Logout"):
+        st.markdown(f'<meta http-equiv="refresh" content="0;URL=http://localhost:8501/">', unsafe_allow_html=True)
+        
+css = '''
+<style>
+    [data-testid='stSidebarNav'] > ul {
+        min-height: 43vh;
+    }
+</style>
+'''
+st.markdown(css, unsafe_allow_html=True)
 
 st.subheader("Robot Manager")
 
@@ -76,7 +95,7 @@ with form_column:
                     with updateButton:
 
                         # Update button
-                        if st.button('Update Robot'):
+                        if st.button('Update Robot', type="primary"):
                             # Check if a robot with the same parameters already exists
                             existing_data = data[data['Robot Name'] != selected_robot]  # Exclude the selected robot from the check
                             if ((existing_data['Symbol'] == new_symbol) &
@@ -85,15 +104,14 @@ with form_column:
                             else:
                                 robot_user.updateRobot(data, selected_robot, new_quantity, new_strategy, new_status)
                                 st.success(f'{selected_robot} details updated successfully!')
+                                st.rerun()
                     
                     with deleteButton:
                         # Delete button
-                        if st.button('Delete Robot'):
-                            # Delete the selected robot's row
-                            data = data[data['Robot Name'] != selected_robot]
-                            # Save the updated data to the CSV file
-                            data.to_csv('Data/robots.csv', index=False)
+                        if st.button('Delete Robot', type="primary"):
+                            robot_user.deleteRobot(data, selected_robot)
                             st.success(f'{selected_robot} deleted successfully!')
+                            st.rerun()
 
                 else:
                     st.warning('No data available for the selected robot.')
@@ -120,12 +138,13 @@ with form_column:
 
 
                 # Create button to trigger data fetching and CSV insertion
-                if st.form_submit_button("Create Robot"):
+                if st.form_submit_button("Create Robot" , type="primary"):
                     # Call the function in alpaca.py to fetch data and insert into CSV
                     created_successfully = robot_user.create_robot(symb, quantity, robot_name, strategy, status)
 
                     if created_successfully:
                         st.success("Robot created successfully!")
+                        st.rerun()
                     else:
                         st.error("Error: Robot already exists.")
 
@@ -153,11 +172,17 @@ while True:
     alpaca_user.continuousMethods()
     robot_user.updateProfit()
 
+    with sidebarContainer.container():
+    
+        logs = pd.read_csv("logs.csv")
+        logs = logs.tail(5)
+        st.markdown("")
+        st.dataframe(logs, hide_index=True, use_container_width = True)
+
     # View profit placeholder
     with placeholderViewProfit.container():
-
         # Read CSV
-        df = pd.read_csv("Data/profit.csv")
+        df = robot_user.get_profit()
         df = df.tail(100)
         
         # Convert Timestamp to datetime
@@ -166,9 +191,9 @@ while True:
         # Create figure
         fig = go.Figure()
 
-        # Add a line for each robot
-        for robot_name, robot_data in df.groupby('Robot Name'):
-            fig.add_trace(go.Scatter(x=robot_data['Timestamp'], y=robot_data['Profit'], mode='lines', name=robot_name))
+        # Iterate over unique combinations of Username and Robot Name
+        for (username, robot_name), robot_data in df.groupby(['Username', 'Robot Name']):
+            fig.add_trace(go.Scatter(x=robot_data['Timestamp'], y=robot_data['Profit'], mode='lines', name=f"{robot_name}"))
 
         # Update layout with custom width and height
         fig.update_layout(
@@ -178,13 +203,14 @@ while True:
             width=850,  # Set custom width
             height=305  # Set custom height
         )
+
         # Display the graph using Streamlit
         st.plotly_chart(fig)
         
     # View robot placeholder
     with placeholderViewRobot.container():
 
-        view_robot_data = pd.read_csv('Data/robots.csv')
+        view_robot_data = alpaca_user.fetch_all_robot()
         selected_data = view_robot_data.drop(columns=view_robot_data.columns.difference(['Robot Name','Symbol', 'Quantity', 'Stratergy', 'Status','Bought']))
         st.table(selected_data)
 
@@ -193,10 +219,9 @@ while True:
     # View transaction placeholder
     with placeholder.container(border=True):
 
-        
 
         # Read data from 'robots.csv'
-        transaction_data = pd.read_csv('Data/transactions.csv')
+        transaction_data = robot_user.get_transaction()
         last_5_transactions = transaction_data.tail(5)
 
         st.subheader("Latest Transactions")

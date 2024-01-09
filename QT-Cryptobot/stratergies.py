@@ -220,7 +220,7 @@ class stratergiesClass:
             sell_condition = last_row['sell_signal']
 
             # Return buy and sell signals for new rows only
-            return buy_condition, sell_condition
+            return True, sell_condition
 
         except Exception as e:
             # Handle the exception here, you can print an error message or log it

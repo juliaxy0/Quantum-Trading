@@ -9,11 +9,31 @@ from robot import robotClass
 import time
 from datetime import datetime
 from PIL import Image
+from streamlit_extras.app_logo import add_logo
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
 # Get parameter from link for auth
 username_param = st.experimental_get_query_params().get("username", [""])[0]
+
+add_logo("pics/logo.png")
+
+with st.sidebar:
+
+    sidebarContainer = st.empty()
+
+
+    if st.button("Logout"):
+        st.markdown(f'<meta http-equiv="refresh" content="0;URL=http://localhost:8501/">', unsafe_allow_html=True)
+        
+css = '''
+<style>
+    [data-testid='stSidebarNav'] > ul {
+        min-height: 43vh;
+    }
+</style>
+'''
+st.markdown(css, unsafe_allow_html=True)
 
 welcome_string = f"Welcome back {username_param}!"
 st.title(welcome_string)
@@ -28,6 +48,10 @@ robot_user = robotClass(username_param)
 # creating a single-element container
 placeholder = st.empty()
 
+
+
+
+
 # Loop to fetch current minute's data every 10 seconds
 while True:
 
@@ -35,8 +59,16 @@ while True:
     alpaca_user.continuousMethods()
     robot_user.updateProfit()
 
+    with sidebarContainer.container():
+    
+        logs = pd.read_csv("logs.csv")
+        logs = logs.tail(5)
+        st.markdown("")
+        st.dataframe(logs, hide_index=True, use_container_width = True)
+
     with placeholder.container():
 
+    
         ################################################ First container of real time close prices with 5 column
 
         # Images of each crypto
@@ -363,7 +395,8 @@ while True:
             with recentOrderContainer:
                     
                 # Read data from 'Data/transactions.csv' into a DataFrame
-                transactions_data = pd.read_csv('Data/transactions.csv')
+                transactions_data = robot_user.get_transaction()
+                transactions_data = transactions_data.drop(columns=['Username'])
 
                 # Display the last 5 rows of the DataFrame
                 last_5_transactions = transactions_data.tail(5)
@@ -372,3 +405,4 @@ while True:
 
         # Wait for 10 seconds before the next iteration
         time.sleep(1)
+

@@ -48,6 +48,7 @@ class robotClass:
 
             # Create a DataFrame with the provided data
             robot_data = pd.DataFrame({
+                'Username' : [_self.username],
                 'RobotName': [robot_name],
                 'Symbol': [symbol],
                 'Quantity': [quantity],
@@ -97,28 +98,12 @@ class robotClass:
                 # Check the response
                 if response.status_code == 201:
                     print("Robot created in MongoDB successfully!")
-                    print("Created Robot: True")
                 else:
                     print(f"Failed to create robot with status code {response.status_code}")
                     print("Response text:", response.text)
 
             except requests.exceptions.RequestException as e:
                 print(f"Error making the request: {e}")
-
-            
-            ########### profit.csv
-
-            formatted_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-
-            # Create a DataFrame with the provided data
-            robot_profit = pd.DataFrame({
-                'Robot Name': [robot_name],
-                'Profit': [0],
-                'Timestamp': [formatted_time],
-            })
-
-            # Append the new data to the 'robots.csv' file or create a new file
-            robot_profit.to_csv('Data/profit.csv', mode='a', header=not os.path.exists('Data/profit.csv'), index=False)
             
             return True
 
@@ -126,13 +111,31 @@ class robotClass:
             print(f"Error creating robot: {e}")
             return False
     
-    ############ STEPPED HERE TADI
-    @staticmethod
-    def deleteRobot(data, selected_robot):
-        # Delete the selected robot's row
+    def deleteRobot(_self, data, selected_robot):
+        # Delete the selected robot's row locally
         data = data[data['Robot Name'] != selected_robot]
         # Save the updated data to the CSV file
         data.to_csv('Data/robots.csv', index=False)
+        print("Robot data deleted locally.")
+
+        # Delete the selected robot in MongoDB
+        url = f"http://127.0.0.1:8000/user/{_self.username}/robot/{selected_robot}"
+
+        try:
+            # Make a DELETE request to remove the robot
+            response = requests.delete(url)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+
+            # Check the response
+            if response.status_code == 200:
+                print("Robot deleted from MongoDB successfully!")
+            else:
+                print(f"Failed to delete robot with status code {response.status_code}")
+                print("Response text:", response.text)
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error making the delete request: {e}")
+
 
     def updateRobot(_self, data, selected_robot, new_quantity, new_strategy, new_status):
         # Update the data
@@ -144,8 +147,9 @@ class robotClass:
         data.to_csv('Data/robots.csv', index=False)
         print("Robot data updated localy.")
 
+        username = _self.username
         # Update robot on mongodb
-        url = f"http://127.0.0.1:8000/user/{_self.username}/robot/{selected_robot}"  # Replace with the actual URL of your FastAPI server
+        url = f"http://127.0.0.1:8000/user/{username}/robot/{selected_robot}"  # Replace with the actual URL of your FastAPI server
 
         # Data for the robot update
         robot_update_data = {
@@ -162,7 +166,6 @@ class robotClass:
             # Check the response
             if response.status_code == 200:
                 print("Robot detail updated to MongoDB successfully!")
-                print("Updated Robot:", response.json())
             else:
                 print(f"Failed to update robot detail with status code {response.status_code}")
                 print("Response text:", response.text)
@@ -170,63 +173,61 @@ class robotClass:
         except requests.exceptions.RequestException as e:
             print(f"Error making the update detail request: {e}")
 
-    @staticmethod
-    def updateBought(quantity, robot_name):
+    import pandas as pd
+
+    def get_profit(_self):
         try:
-            # Load the robots data from the CSV file
-            robots_data = pd.read_csv('Data/robots.csv')
 
-            # Find the row corresponding to the given robot name
-            robot_row = robots_data[robots_data['Robot Name'] == robot_name]
+            file_path='Data/profit.csv'
 
-            # Check if the robot exists in the data
-            if not robot_row.empty:
+            # Read profit_data from CSV file
+            profit_data = pd.read_csv(file_path)
 
-                # Get the index of the row
-                row_index = robot_row.index[0]
+            # Filter the DataFrame to include only rows where Username matches self.username
+            filtered_data = profit_data[profit_data['Username'] == _self.username]
 
-                # Update the 'Bought' column by adding the given quantity
-                robots_data.loc[robot_row.index, 'Bought'] += quantity
+            return filtered_data
 
-                # Get the new value of the 'Bought' column
-                new_bought_value = robots_data.loc[row_index, 'Bought']
+        except FileNotFoundError:
+            print(f"Error: File '{file_path}' not found.")
+            return pd.DataFrame()  # Return an empty DataFrame if file not found
 
-                # Save the updated data back to the CSV file
-                robots_data.to_csv('Data/robots.csv', index=False)
-                print(f"Bought updated for {robot_name} locally.")
-
-                url = "http://127.0.0.1:8000/robot/"  # Replace with the actual URL of your FastAPI server
-                robot_name_to_update = robot_name  # Replace with the RobotName of the robot you want to update
-
-                # Data for the robot update
-                robot_update_data = {
-                    "Bought": new_bought_value
-                }
-
-                try:
-                    # Make a PUT request to update the robot
-                    response = requests.put(f"{url}/{robot_name_to_update}", json=robot_update_data)
-                    response.raise_for_status()  # Raise an exception for HTTP errors
-
-                    # Check the response
-                    if response.status_code == 200:
-                        print("Robot bought updated in MongoDB successfully!")
-                        print("Updated Robot:", response.json())
-                    else:
-                        print(f"Failed to update robot bought with status code {response.status_code}")
-                        print("Response text:", response.text)
-
-                except requests.exceptions.RequestException as e:
-                    print(f"Error making the bought request: {e}")
-
-            else:
-                print(f"Robot '{robot_name}' not found.")
+        except pd.errors.EmptyDataError:
+            print(f"Error: File '{file_path}' is empty.")
+            return pd.DataFrame()  # Return an empty DataFrame if file is empty
 
         except Exception as e:
-            print(f"Error updating 'Bought': {e}")
+            print(f"Error reading transactions from '{file_path}': {e}")
+            return pd.DataFrame()  # Return an empty DataFrame in case of other errors
 
-    @staticmethod
-    def updateProfit():
+    def get_transaction(_self):
+        try:
+
+            file_path='Data/transactions.csv'
+
+            # Read transactions from CSV file
+            transactions_data = pd.read_csv(file_path)
+
+            # Filter the DataFrame to include only rows where Username matches self.username
+            filtered_data = transactions_data[transactions_data['Username'] == _self.username]
+
+            # Optional: You can perform additional processing or filtering if needed
+
+            return filtered_data
+
+        except FileNotFoundError:
+            print(f"Error: File '{file_path}' not found.")
+            return pd.DataFrame()  # Return an empty DataFrame if file not found
+
+        except pd.errors.EmptyDataError:
+            print(f"Error: File '{file_path}' is empty.")
+            return pd.DataFrame()  # Return an empty DataFrame if file is empty
+
+        except Exception as e:
+            print(f"Error reading transactions from '{file_path}': {e}")
+            return pd.DataFrame()  # Return an empty DataFrame in case of other errors
+
+    def updateProfit(_self):
         try:
             # Load robots data from 'Data/robots.csv'
             robots_data = pd.read_csv('Data/robots.csv')
@@ -243,14 +244,15 @@ class robotClass:
             # Convert the 'Price' column to numeric after removing '$' and commas
             merged_data['Price'] = pd.to_numeric(merged_data['Price'].replace('[\$,]', '', regex=True))
 
-            # Calculate profit for each robot
+            # Calculate profit for each robot using the 'Bought' quantity
             merged_data['Profit'] = merged_data['Bought'] * merged_data['Price']
 
-            # Create a DataFrame with 'Robot Name', 'Profit', and 'Timestamp'
+            # Create a DataFrame with 'Username', 'Robot Name', 'Profit', and 'Timestamp'
             profit_data = pd.DataFrame({
+                'Username': [_self.username] * len(merged_data),  # Repeat username for each row
                 'Robot Name': merged_data['Robot Name'],
                 'Profit': merged_data['Profit'],
-                'Timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] 
+                'Timestamp': [datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]] * len(merged_data)
             })
 
             # Append profit_data to 'Data/profit.csv'

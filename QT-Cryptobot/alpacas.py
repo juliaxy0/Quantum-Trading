@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import csv
 import requests
+from pathlib import Path
 
 # Alpaca
 from alpaca.trading.client import TradingClient
@@ -15,8 +16,6 @@ from alpaca.data.timeframe import TimeFrame
 # Import classes
 from stratergies import stratergiesClass
 
-from robot import robotClass
-
 # TODO : get files method, dont let view read directly
 
 class alpacaClass:
@@ -25,12 +24,9 @@ class alpacaClass:
         
         # Getting user's credentials
         _self.username = username
-        api_key, secret_key = _self.get_user_by_username(_self.username)
-        API_KEY = api_key
-        SECRET_KEY = secret_key
-
+        _self.api_key, _self.secret_key = _self.get_user_by_username(_self.username)
         # Alpaca Trading Client
-        _self.trading_client = TradingClient(API_KEY, SECRET_KEY, paper=True)
+        _self.trading_client = TradingClient(_self.api_key, _self.secret_key, paper=True)
         _self.client = CryptoHistoricalDataClient()
         _self.account = _self.trading_client.get_account()
         
@@ -45,7 +41,17 @@ class alpacaClass:
         _self.getAccountDetails()
 
     #################################### home.py
-    
+        
+    def add_log(_self,log_message):
+        try:
+            file_path='E:/QuantumTrading/QT-Cryptobot/logs.csv'
+            # Append the log message to the CSV file
+            with open(file_path, 'a') as file:
+                file.write(f"{log_message}\n")
+
+        except Exception as e:
+            print(f"Error adding log: {e}")
+
     def get_user_by_username(_self,username):
         # Replace the URL with your actual API endpoint
         api_url = f"http://127.0.0.1:8000/user/{username}"
@@ -228,7 +234,7 @@ class alpacaClass:
 
         # Empty the profit file
         file_path = 'Data/profit.csv'
-        header = "Robot Name,Profit,Timestamp\n"
+        header = "Username,Robot Name,Profit,Timestamp\n"
         with open(file_path, 'w') as file:
             file.write(header)
             
@@ -541,7 +547,8 @@ class alpacaClass:
         try:
             # Read data from 'robots.csv'
             robots_data = pd.read_csv('Data/robots.csv')
-            return robots_data
+            filtered_data = robots_data[robots_data['Username'] == _self.username]
+            return filtered_data
 
         except Exception as e:
             print(f"Error fetching robot data: {e}")
@@ -563,6 +570,25 @@ class alpacaClass:
         except Exception as e:
             print(f"Error fetching latest cash : {e}")
 
+    def get_transactions(file_path='QT-Cryptobot/Data/transactions.csv'):
+        try:
+            # Read transactions from CSV file
+            transactions_data = pd.read_csv(file_path)
+
+            return transactions_data
+
+        except FileNotFoundError:
+            print(f"Error: File '{file_path}' not found.")
+            return pd.DataFrame()  # Return an empty DataFrame if file not found
+
+        except pd.errors.EmptyDataError:
+            print(f"Error: File '{file_path}' is empty.")
+            return pd.DataFrame()  # Return an empty DataFrame if file is empty
+
+        except Exception as e:
+            print(f"Error reading transactions from '{file_path}': {e}")
+            return pd.DataFrame()  # Return an empty DataFrame in case of other errors
+
     def manual_order(_self,symb,quantity,order_type):
         try:
 
@@ -576,7 +602,6 @@ class alpacaClass:
                 # Check if can buy
                 if cash >= symb_price:
                     _self.buy(symb, quantity, "Manual")
-                    robotClass.updateBought(quantity,"Manual")
                     print("Manual buy succesful")
                     return True
                 else:
@@ -618,12 +643,45 @@ class alpacaClass:
             order_id = _self.trading_client.get_order_by_client_id(market_order_data.client_order_id)
 
             # Append order information to transactions.csv
-            order_info = {'robot_name': robot_name, 'client_order_id': market_order_data.client_order_id, 'order_id': order_id.id, 'type': "Buy"} #, 'filled_price': filled_avg_price
+            order_info = {'Username': _self.username, 'robot_name': robot_name, 'client_order_id': market_order_data.client_order_id, 'order_id': order_id.id, 'quantity': market_order_data.qty, 'filled_price': order_id.filled_avg_price, 'type': "Buy"} #, 
             transactions_data = pd.DataFrame([order_info])
             transactions_data.to_csv('Data/transactions.csv', mode='a', header=not os.path.exists('Data/transactions.csv'), index=False)
+            print(f"Robot {robot_name} transaction saved locally")
+
+            # Update MongoDB with the transaction
+            url = f"http://127.0.0.1:8000/user/{_self.username}/robot/{robot_name}/transaction"
+            
+            # Converting to string
+            time = str(formatted_time)
+            transaction_id = str(order_id.id)
+
+            transaction_data = {
+                "time" : time,
+                "transaction_id" : transaction_id,
+                "quantity": quantity,
+                "filled_price": order_id.filled_avg_price,
+                "type": "Buy",
+            }
+
+            print(transaction_data)
+
+            try:
+                # Make a POST request to add the transaction
+                response = requests.post(url, json=transaction_data)
+                response.raise_for_status()  # Raise an exception for HTTP errors
+
+                # Check the response
+                if response.status_code == 201:
+                    print("Transaction added to MongoDB successfully!")
+                else:
+                    print(f"Failed to add transaction with status code {response.status_code}")
+                    print("Response text:", response.text)
+
+            except requests.exceptions.RequestException as e:
+                print(f"Error making the transaction request: {e}")
 
         except Exception as e:
-            print(f"Error placing buy order: {e}")
+            print(f"Error placing buy order transaction: {e}")
 
     # preparing SELL market orders
     def sell(_self, symb, quantity, robot_name):
@@ -646,7 +704,7 @@ class alpacaClass:
             order_id = _self.trading_client.get_order_by_client_id(market_order_data.client_order_id)
 
             # Append order information to transactions.csv
-            order_info = {'robot_name': robot_name, 'client_order_id': market_order_data.client_order_id, 'order_id': order_id.id, 'type': "sell"} #, 'filled_price': filled_avg_price
+            order_info = {'robot_name': robot_name, 'client_order_id': market_order_data.client_order_id, 'order_id': order_id.id, 'quantity': market_order_data.qty, 'filled_price': order_id.filled_avg_price,'type': "sell"} 
             transactions_data = pd.DataFrame([order_info])
             transactions_data.to_csv('Data/transactions.csv', mode='a', header=not os.path.exists('Data/transactions.csv'), index=False)
 
@@ -697,10 +755,12 @@ class alpacaClass:
                         if last_row_cash >= cost:
                             _self.buy(coin, quantity, robot_name)
                             # Update quantity bought by robot
-                            robotClass.updateBought(quantity,robot_name)
+                            _self.updateBought("buy", quantity,robot_name)
                             print(f"{robot_name} bought")
+                            _self.add_log(f"{robot_name} bought")
                         else:
-                            print(f"Not enough funds to buy {coin}")
+                            print(f"{robot_name}: Not enough funds to buy {coin}")
+                            _self.add_log(f"{robot_name}: Not enough funds to buy {coin}")
 
                     elif sell_condition:
 
@@ -711,12 +771,72 @@ class alpacaClass:
                         # Compare available quantity with the quantity the bot wants to sell
                         if available_quantity >= quantity:
                             _self.sell(coin, quantity, robot_name)
+                            _self.updateBought("sold",quantity,robot_name)
                             print(f"{robot_name} sold")
+                            _self.add_log(f"{robot_name} sold")
                         else:
-                            print(f"Not enough {coin} to sell.")
+                            print(f"{robot_name}: Not enough {coin} to sell.")
+                            _self.add_log(f"{robot_name}: Not enough {coin} to sell.")
                     else:
-                        print(f"{robot_name}: No buying or selling this round.")     
+                        print(f"{robot_name}: No buying or selling.")   
+                        _self.add_log(f"{robot_name}: No buying or selling.")  
                 else:
                     #Robot is not running
                     print(robot_name + " is not running")
+                    _self.add_log(robot_name + " is not running")
                     continue
+
+    def updateBought(_self, status, quantity, robot_name):
+        try:
+            # Load the robots data from the CSV file
+            robots_data = pd.read_csv('Data/robots.csv')
+
+            # Find the row corresponding to the given robot name
+            robot_row = robots_data[robots_data['Robot Name'] == robot_name]
+
+            # Check if the robot exists in the data
+            if not robot_row.empty:
+
+                if status == "buy":
+                    # Update the 'Bought' column by adding the given quantity
+                    robots_data.loc[robot_row.index, 'Bought'] += quantity
+                else:
+                    robots_data.loc[robot_row.index, 'Bought'] -= quantity
+
+                # Get the new value of the 'Bought' column
+                new_bought_value = robots_data.loc[robot_row.index[0], 'Bought']
+
+                # Save the updated data back to the CSV file
+                robots_data.to_csv('Data/robots.csv', index=False)
+                print(f"{status} updated for {robot_name} locally.")
+
+                # Update the 'Bought' field in MongoDB
+                username = _self.username
+                url = f"http://127.0.0.1:8000/user/{username}/robot/{robot_name}/update_bought"
+
+                # Data for the robot update
+                robot_update_data = {
+                    "Bought": new_bought_value
+                }
+
+                try:
+                    # Make a PUT request to update the robot
+                    response = requests.put(url, json=robot_update_data)
+                    response.raise_for_status()  # Raise an exception for HTTP errors
+
+                    # Check the response
+                    if response.status_code == 200:
+                        print(f"Robot {status} updated in MongoDB successfully!")
+                        print("Updated Robot:", response.json())
+                    else:
+                        print(f"Failed to update robot {status} with status code {response.status_code}")
+                        print("Response text:", response.text)
+
+                except requests.exceptions.RequestException as e:
+                    print(f"Error making the {status} request: {e}")
+
+            else:
+                print(f"Robot '{robot_name}' not found.")
+
+        except Exception as e:
+            print(f"Error updating '{status}': {e}")

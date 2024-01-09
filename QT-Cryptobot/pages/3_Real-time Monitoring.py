@@ -5,11 +5,32 @@ from robot import robotClass
 import time
 from stratergies import stratergiesClass
 from PIL import Image
+import pandas as pd
+from streamlit_extras.app_logo import add_logo
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
 # Get parameter from link for auth
 username_param = st.experimental_get_query_params().get("username", [""])[0]
+
+add_logo("pics/logo.png")
+
+with st.sidebar:
+
+    sidebarContainer = st.empty()
+
+
+    if st.button("Logout"):
+        st.markdown(f'<meta http-equiv="refresh" content="0;URL=http://localhost:8501/">', unsafe_allow_html=True)
+        
+css = '''
+<style>
+    [data-testid='stSidebarNav'] > ul {
+        min-height: 43vh;
+    }
+</style>
+'''
+st.markdown(css, unsafe_allow_html=True)
 
 ############################################# Real time Dashboard #####################################
 
@@ -98,7 +119,7 @@ with placeholder.container():
             order_type = st.selectbox("Select Order Type:", options=['Buy', 'Sell'], index=0)
 
             # Submit Order Button
-            if st.form_submit_button("submit order"):
+            if st.form_submit_button("Submit Order" , type="primary"):
                 status = alpaca_user.manual_order(symbol, quantity,order_type)
                 # Check buying status
                 if status:
@@ -106,6 +127,7 @@ with placeholder.container():
                 else:
                     st.error("Insufficient asset. Cannot submit order.")
             st.caption("*Min quantity for LTC/USD and LINK/USD is 1")
+            st.caption("*Manual transactions are solely recorded.")
     
     st.info("The OHLC drawboard is provided by TradingView, intended solely for self-analysis purposes. Please refer the top columns for Alpaca's pricing information", icon="ℹ️")
 
@@ -127,6 +149,13 @@ while True:
     # Update real-time data
     alpaca_user.continuousMethods()
     robot_user.updateProfit()
+
+    with sidebarContainer.container():
+    
+        logs = pd.read_csv("logs.csv")
+        logs = logs.tail(5)
+        st.markdown("")
+        st.dataframe(logs, hide_index=True, use_container_width = True)
 
     # Fetch real time close prices
     closePrices = alpaca_user.getRealTimePrices()

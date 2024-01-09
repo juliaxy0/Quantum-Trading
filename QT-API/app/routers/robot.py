@@ -3,7 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from typing import List
 import uuid
 
-from app.models.robot import Robot, RobotUpdate
+from app.models.robot import Robot, RobotUpdate, BoughtUpdate 
 
 robot = APIRouter()
 
@@ -29,17 +29,6 @@ def create_robot(request: Request, username: str, robot: Robot = Body(...)):
 
     return None  # or any other response as needed
 
-# @robot.get("/", response_description="List all robots for a user", response_model=List[Robot])
-# def list_robots(request: Request, username: str):
-#     robots = list(request.app.database["user"].find({"username": username}, limit=100))
-#     return robots
-
-# @robot.get("/{RobotName}", response_description="Get a single robot by RobotName", response_model=Robot)
-# def find_robot(RobotName: str, request: Request, user_id: str):
-#     if (robot := request.app.database["robot"].find_one({"RobotName": RobotName, "user_id": user_id})) is not None:
-#         return robot
-#     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Robot with RobotName {RobotName} not found for user {user_id}")
-
 @robot.put("/{RobotName}", response_description="Update a robot", response_model=None)
 def update_robot(RobotName: str, request: Request, username: str, robot_update: RobotUpdate = Body(...)):
     robot_update_dict = robot_update.dict(exclude_unset=True)
@@ -48,25 +37,77 @@ def update_robot(RobotName: str, request: Request, username: str, robot_update: 
     if not robot_update_dict:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No update parameters provided")
 
-    # Perform the update using the positional operator $
-    update_result = request.app.database["users"].update_one(
-        {"username": username, "robots.RobotName": RobotName},
-        {"$set": {"robots.$": robot_update_dict}}
-    )
+    # Find the user by username
+    user = request.app.database["users"].find_one({"username": username})
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with username {username} not found")
+
+    # Find the robot within the user's robots
+    robots = user.get("robots", [])
+    updated_robot = None
+
+    for robot in robots:
+        if robot["RobotName"] == RobotName:
+            # Update only the specified attributes
+            for key, value in robot_update_dict.items():
+                robot[key] = value
+            updated_robot = robot
+            break
 
     # Check if the robot was found and updated
-    if update_result.matched_count == 0:
+    if updated_robot:
+        # Save the updated user document with the modified robots array
+        request.app.database["users"].update_one({"username": username}, {"$set": {"robots": robots}})
+    else:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Robot with RobotName {RobotName} not found for username {username}")
 
     return None
 
-@robot.delete("/{RobotName}", response_description="Delete a robot")
-def delete_robot(RobotName: str, request: Request, response: Response, user_id: str):
-    delete_result = request.app.database["robot"].delete_one({"RobotName": RobotName, "user_id": user_id})
+@robot.delete("/{RobotName}", response_description="Delete a robot", response_model=None)
+def delete_robot(RobotName: str, request: Request, username: str):
+    # Find the user by username
+    user = request.app.database["users"].find_one({"username": username})
 
-    if delete_result.deleted_count == 1:
-        response.status_code = status.HTTP_204_NO_CONTENT
-        return response
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with username {username} not found")
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Robot with RobotName {RobotName} not found for user {user_id}")
+    # Find the robot within the user's robots
+    robots = user.get("robots", [])
+    updated_robots = [robot for robot in robots if robot["RobotName"] != RobotName]
 
+    # Check if the robot was found and deleted
+    if len(robots) != len(updated_robots):
+        # Save the updated user document with the modified robots array
+        request.app.database["users"].update_one({"username": username}, {"$set": {"robots": updated_robots}})
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Robot with RobotName {RobotName} not found for username {username}")
+
+    return None
+
+@robot.put("/{RobotName}/update_bought", response_description="Update the 'Bought' field of a robot", response_model=None)
+def update_bought(RobotName: str, username: str, request: Request, new_bought_value: BoughtUpdate = Body(...)):
+    # Find the user by username
+    user = request.app.database["users"].find_one({"username": username})
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with username {username} not found")
+
+    # Find the robot within the user's robots
+    robots = user.get("robots", [])
+    updated_robot = None
+
+    for robot in robots:
+        if robot["RobotName"] == RobotName:
+            # Update the 'Bought' field
+            robot["Bought"] = new_bought_value.Bought  # Extract the value from the Pydantic model
+            updated_robot = robot
+            break
+
+    # Check if the robot was found and updated
+    if updated_robot:
+        # Save the updated user document with the modified robots array
+        request.app.database["users"].update_one({"username": username}, {"$set": {"robots": robots}})
+        return True
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Robot with RobotName {RobotName} not found for username {username}")

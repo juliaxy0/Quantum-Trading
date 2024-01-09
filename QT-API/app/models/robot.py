@@ -1,7 +1,5 @@
-import uuid
 from typing import Optional
 from pydantic import BaseModel, Field
-from bson import ObjectId 
 from decimal import Decimal
 
 
@@ -41,3 +39,6 @@ class RobotUpdate(BaseModel):
                 "Status": "Running",
             }
         }
+
+class BoughtUpdate(BaseModel):
+    Bought: float
