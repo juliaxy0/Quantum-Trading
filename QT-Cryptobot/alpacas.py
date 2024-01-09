@@ -20,11 +20,11 @@ from stratergies import stratergiesClass
 
 class alpacaClass:
 
-    def __init__(_self, username):
-        
+    def __init__(_self, id):
+
+        _self.id = id
         # Getting user's credentials
-        _self.username = username
-        _self.api_key, _self.secret_key = _self.get_user_by_username(_self.username)
+        _self.password, _self.username, _self.api_key, _self.secret_key = _self.get_user_by_username(_self.id)
         # Alpaca Trading Client
         _self.trading_client = TradingClient(_self.api_key, _self.secret_key, paper=True)
         _self.client = CryptoHistoricalDataClient()
@@ -52,21 +52,40 @@ class alpacaClass:
         except Exception as e:
             print(f"Error adding log: {e}")
 
-    def get_user_by_username(_self,username):
+    def get_user_by_username(_self,id):
         # Replace the URL with your actual API endpoint
-        api_url = f"http://127.0.0.1:8000/user/{username}"
+        api_url = f"http://127.0.0.1:8000/user/{id}"
         
         # Make a GET request to fetch user data
         response = requests.get(api_url)
         
         if response.status_code == 200:
             user_data = response.json()
+            password = user_data.get("password")
+            username = user_data.get("username")
             api_key = user_data.get("api_key")
             secret_key = user_data.get("secret_key")
-            return api_key, secret_key
+            return password, username, api_key, secret_key
         else:
             print(f"Error fetching user data. Status code: {response.status_code}, Details: {response.text}")
             return None
+    
+    def update_user_details(_self, password, api_key, secret_key):
+        api_url = f"http://127.0.0.1:8000/user/{_self.id}"
+
+        try:
+
+            user_update = {"password": password, "api_key": api_key, "secret_key": secret_key}
+
+            response = requests.put(api_url, json=user_update)
+            if response.status_code == 200:
+                return True
+            else:
+                print(f"Failed to update user details. Status code: {response.status_code}, Details: {response.text}")
+                return False
+        except Exception as e:
+            print(f"Error occurred: {e}")
+            return False
     
     def continuousMethods(_self):
         _self.fetch_real_time_btc_data()
@@ -649,21 +668,20 @@ class alpacaClass:
             print(f"Robot {robot_name} transaction saved locally")
 
             # Update MongoDB with the transaction
-            url = f"http://127.0.0.1:8000/user/{_self.username}/robot/{robot_name}/transaction"
+            url = f"http://127.0.0.1:8000/user/{_self.username}/robot/{robot_name}/transaction/"
             
             # Converting to string
             time = str(formatted_time)
             transaction_id = str(order_id.id)
+            filled_price = float(order_id.filled_avg_price)
 
             transaction_data = {
                 "time" : time,
                 "transaction_id" : transaction_id,
                 "quantity": quantity,
-                "filled_price": order_id.filled_avg_price,
+                "filled_price": filled_price,
                 "type": "Buy",
             }
-
-            print(transaction_data)
 
             try:
                 # Make a POST request to add the transaction

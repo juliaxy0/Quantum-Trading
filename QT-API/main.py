@@ -9,6 +9,7 @@ from dotenv import dotenv_values
 from pymongo import MongoClient
 from app.routers.user import user
 from app.routers.robot import robot
+from app.routers.transaction import transaction
 
 ####################### Sentiment API
 
@@ -116,4 +117,4 @@ async def root():
  
 database.include_router(user, tags=["user"], prefix="/user") 
 database.include_router(robot, tags=["robot"], prefix="/user/{username}/robot")
-database.include_router(robot, tags=["transaction"], prefix="/user/{username}/robot/{robotName}/transaction")
+database.include_router(transaction, tags=["transaction"], prefix="/user/{username}/robot/{robotName}/transaction")

@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_extras.switch_page_button import switch_page
+import requests
 
 st.set_page_config(initial_sidebar_state="collapsed")
 
@@ -31,8 +32,16 @@ with st.form("create_user_form"):
 
 # Check if the form is submitted
 if submitted:
-    st.success("User created successfully!")
+    # Create user using FastAPI route
+    new_user_data = {"username": username, "password": password, "api_key": api_key, "secret_key": secret_key}
+    response = requests.post("http://127.0.0.1:8000/user/create", json=new_user_data)
 
+    if response.status_code == 201:
+        st.success("User created successfully!")
+    elif response.status_code == 409:
+        st.error("Username already exists. Please choose a different username.")
+    else:
+        st.error(f"Failed to create user. Status code: {response.status_code}")
 
 st.markdown("Already have an account?")
 if st.button("Login"):

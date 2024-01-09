@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, Decimal
+from pydantic import BaseModel, Field
+from decimal import Decimal
 
 class Transaction(BaseModel):
     time: str = Field(...)
@@ -16,6 +17,6 @@ class Transaction(BaseModel):
                 "transaction_id": "123",
                 "quantity": 0.01,
                 "filled_price": 5000.0,
-                "type": "Buy",
+                "type": "Buy"
             }
         }

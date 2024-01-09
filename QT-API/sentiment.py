@@ -95,10 +95,5 @@ class sentimentAnalysisClass:
 
         csv_file_path = 'E:/QuantumTrading/QT-API/sentimentData/{}.csv'.format(self.crypto)
 
-        # Check if the file exists
-        if not os.path.isfile(csv_file_path):
-            # If the file doesn't exist, create it with the specified header
-            df.to_csv(csv_file_path, index=False, header=['Ticker', 'Summary', 'Sentiment', 'Sentiment Score', 'URL'])
-        else:
-            # If the file exists, replace its content with the new DataFrame
-            df.to_csv(csv_file_path, mode='w', index=False, header=['Ticker', 'Summary', 'Sentiment', 'Sentiment Score', 'URL'])
+        # Write DataFrame to CSV, overwriting the existing file
+        df.to_csv(csv_file_path, index=False, header=['Ticker', 'Summary', 'Sentiment', 'Sentiment Score', 'URL'])

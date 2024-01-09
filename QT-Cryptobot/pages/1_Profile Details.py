@@ -9,7 +9,7 @@ from streamlit_extras.app_logo import add_logo
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
 # Get parameter from link for auth
-username_param = st.experimental_get_query_params().get("username", [""])[0]
+username_param = st.experimental_get_query_params().get("id", [""])[0]
 
 add_logo("pics/logo.png")
 
@@ -54,7 +54,7 @@ with profile_column:
             username_value = st.text_input("Username", value=alpaca_user.username, key="username", disabled=True)
 
             # Input field for password
-            password_value = st.text_input("Password", value="hehe", type="password", key="password", disabled=False)
+            password_value = st.text_input("Password", value=alpaca_user.password, type="password", key="password", disabled=False)
 
             # Input field for API key
             api_key_value = st.text_input("API Key", value=alpaca_user.api_key, key="api_key", disabled=False)
@@ -63,7 +63,10 @@ with profile_column:
             secret_key_value = st.text_input("Secret Key", value=alpaca_user.secret_key, key="secret_key", disabled=False)
 
             if st.form_submit_button("Update" , type="primary"):
-                print("Update")
+                if alpaca_user.update_user_details(password=password_value, api_key=api_key_value, secret_key=secret_key_value):
+                    st.success("User details updated successfully!")
+                else:
+                    st.error("Failed to update user details.")
 
 with transaction_column:
 

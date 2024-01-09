@@ -22,11 +22,11 @@ def main():
     username = st.text_input("Username:")
     password = st.text_input("Password:", type="password")
 
-    # Check if the login button is clicked
     if st.button("Login"):
         # Validate the login credentials
-        if authenticate_user(username, password):
-            st.markdown(f'<meta http-equiv="refresh" content="0;URL=http://localhost:8502/?username={username}">', unsafe_allow_html=True)
+        user_id = authenticate_user(username, password)
+        if user_id:
+            st.markdown(f'<meta http-equiv="refresh" content="0;URL=http://localhost:8502/?id={user_id}">', unsafe_allow_html=True)
         else:
             st.error("Invalid email or password")
 
@@ -46,7 +46,7 @@ def authenticate_user(username, password):
     
     if response.status_code == 200:
         print("Login successful!")
-        return response.json()["authenticated"]
+        return response.json().get("_id")
     else:
         print(f"Login failed. Status code: {response.status_code}, Details: {response.text}")
         return False

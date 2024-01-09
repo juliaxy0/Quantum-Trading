@@ -9,7 +9,7 @@ from streamlit_extras.app_logo import add_logo
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
 
 # Get parameter from link for auth
-username_param = st.experimental_get_query_params().get("username", [""])[0]
+username_param = st.experimental_get_query_params().get("id", [""])[0]
 
 add_logo("pics/logo.png")
 

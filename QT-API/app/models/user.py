@@ -5,7 +5,6 @@ from bson import ObjectId
 from decimal import Decimal
 
 class User(BaseModel):
-    id: str = Field(default_factory=uuid.uuid4, alias="_id")
     username: str = Field(...)
     password: str = Field(...)
     api_key: str = Field(...)
@@ -25,6 +24,8 @@ class User(BaseModel):
         }
 
 class UserResponse(BaseModel):
+    password : str
+    username: str
     api_key: str
     secret_key: str
     
