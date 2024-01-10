@@ -8,7 +8,7 @@ from PIL import Image
 import pandas as pd
 from streamlit_extras.app_logo import add_logo
 
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed", page_title="Real-time Monitoring", page_icon = ":money_with_wings:")
 
 # Get parameter from link for auth
 username_param = st.experimental_get_query_params().get("id", [""])[0]
@@ -36,6 +36,7 @@ st.markdown(css, unsafe_allow_html=True)
 
 # Dashboard title
 st.subheader('Real-time Crypto Analysis and Monitoring')
+st.markdown("")
 
 # Create alpaca user
 alpaca_user = alpacaClass(username_param)
@@ -52,11 +53,27 @@ down_image = Image.open("pics/down.png")
 arrow = Image.open("pics/arrow.png")
 more_image = Image.open("pics/more.png")
 
+# How we scale our sentiment and ML analysis explanation to user
+eduContainer = st.container(border=True)
+
+with eduContainer:
+
+    c, sentimenEdu, MLEdu, d  = st.columns([0.05,0.8, 0.8, 0.05])
+
+    with c:
+        st.markdown("")
+
+    with sentimenEdu:
+        st.image(scale, width=650, use_column_width=False)
+
+    with MLEdu:
+        st.image(arrow, width=650, use_column_width=False)
+        
 statusContainer = st.container()
 
 with statusContainer:
 
-    btc, eth, link, ltc, more, empty = st.columns([1,0.9,0.8,0.8,0.3,0.6])
+    btc, eth, link, ltc = st.columns([1,1,1,1])
 
     with btc:
         btcContainer = st.container(border=True)
@@ -77,16 +94,8 @@ with statusContainer:
         ltcContainer = st.container(border=True)
         with ltcContainer:
             ltcPlaceholder = st.empty() 
-    
-    with more:
-            st.text("")
-            st.text("")
-            st.text("")
-            st.image(more_image, width=35, use_column_width=False)
-            st.text("")
-    
-    with empty:
-            st.markdown("")
+
+            
 
 # creating a single-element container
 placeholder = st.empty()
@@ -96,6 +105,7 @@ with placeholder.container():
     live, buy = st.columns([1, 0.33])
 
     with live:
+
 
         tradingview_widget_code = """
         <iframe src="https://s.tradingview.com/embed-widget/advanced-chart/?symbol=BTCUSD&amp;interval=1&amp;timezone=Asia%2FSingapore&amp;theme=dark&amp;style=1&amp;locale=en&amp;enable_publishing=false&amp;hide_side_toolbar=false&amp;allow_symbol_change=true&amp;studies=%5B%5D&amp;show_popup_button=true&amp;popup_width=1000&amp;popup_height=70" style="width: 100%; height: 500px;" frameborder="0" allowtransparency="true" allowfullscreen="true" scrolling="no"></iframe>
@@ -127,22 +137,10 @@ with placeholder.container():
                 else:
                     st.error("Insufficient asset. Cannot submit order.")
             st.caption("*Min quantity for LTC/USD and LINK/USD is 1")
-            st.caption("*Manual transactions are solely recorded.")
     
     st.info("The OHLC drawboard is provided by TradingView, intended solely for self-analysis purposes. Please refer the top columns for Alpaca's pricing information", icon="ℹ️")
 
-    # How we scale our sentiment and ML analysis explanation to user
-    eduContainer = st.container(border=True)
-
-    with eduContainer:
-
-        sentimenEdu, MLEdu = st.columns([1, 0.85])
-
-        with sentimenEdu:
-            st.image(scale, width=35, use_column_width=True)
-
-        with MLEdu:
-            st.image(arrow, width=35, use_column_width=True)
+    
 
 while True:
 

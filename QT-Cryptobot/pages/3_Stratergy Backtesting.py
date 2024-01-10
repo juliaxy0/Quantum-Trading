@@ -8,38 +8,13 @@ import plotly.graph_objects as go
 from backtest import backtestClass
 from streamlit_extras.app_logo import add_logo
 
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed", page_title="Stratergy Backtest", page_icon = ":money_with_wings:")
 
 # Get parameter from link for auth
 username_param = st.experimental_get_query_params().get("id", [""])[0]
 
 add_logo("pics/logo.png")
 
-# st.markdown(
-#     """
-#     <style>
-#     button {
-#         background: none!important;
-#         border: none;
-#         padding: 0!important;
-#         color: grey !important;
-#         text-decoration: none;
-#         cursor: pointer;
-#         border: none !important;
-#     }
-#     button:hover {
-#         text-decoration: none;
-#         color: black !important;
-#     }
-#     button:focus {
-#         outline: none !important;
-#         box-shadow: none !important;
-#         color: black !important;
-#     }
-#     </style>
-#     """,
-#     unsafe_allow_html=True,
-# )
 
 with st.sidebar:
 
@@ -59,6 +34,7 @@ css = '''
 st.markdown(css, unsafe_allow_html=True)
 
 st.subheader("Robot Backtesting")
+st.caption("Ensure to backtest your strategies thoroughly before implementing them in a live trading environment.")
 
 # Create alpaca user
 alpaca_user = alpacaClass(username_param)
@@ -67,10 +43,10 @@ backtest_user = backtestClass()
 
 # Empty df
 max_return_df = pd.DataFrame()
-btc_stats = " "
-eth_stats = " "
-ltc_stats = " "
-link_stats = " "
+btc_stats = "‎\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\t\t‎"
+eth_stats = "‎\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\t\t‎"
+ltc_stats = "‎\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\t\t‎"
+link_stats = "‎\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\t\t‎"
 
 # Use st.columns to create two columns
 form_column, view_column = st.columns([1,0.8])

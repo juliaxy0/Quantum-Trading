@@ -15,6 +15,32 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.markdown(
+    """
+    <style>
+    button[kind="secondary"] {
+        background: none!important;
+        border: none;
+        padding: 1!important;
+        color: white !important;
+        text-decoration: none;
+        cursor: pointer;
+        border: none !important;
+    }
+    button[kind="secondary"]:hover {
+        text-decoration: none;
+        color: red !important;
+    }
+    button[kind="secondary"]:focus {
+        outline: none !important;
+        box-shadow: none !important;
+        color: red !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.subheader("Create an account")
 
 # Use st.form to create the form
@@ -28,7 +54,7 @@ with st.form("create_user_form"):
     secret_key = st.text_input("Secret Key", type="password")
 
     # Submit button inside the form
-    submitted = st.form_submit_button("Create User")
+    submitted = st.form_submit_button("Sign up", type = "primary")
 
 # Check if the form is submitted
 if submitted:
@@ -43,6 +69,5 @@ if submitted:
     else:
         st.error(f"Failed to create user. Status code: {response.status_code}")
 
-st.markdown("Already have an account?")
-if st.button("Login"):
+if st.button("Already have an account?  Login"):
         switch_page("login")

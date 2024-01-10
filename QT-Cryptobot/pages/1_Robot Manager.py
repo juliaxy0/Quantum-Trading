@@ -6,7 +6,7 @@ import time
 import plotly.graph_objects as go
 from streamlit_extras.app_logo import add_logo
 
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed",page_title="Robot Manager", page_icon = ":money_with_wings:")
 
 # Get parameter from link for auth
 username_param = st.experimental_get_query_params().get("id", [""])[0]
@@ -221,8 +221,9 @@ while True:
 
 
         # Read data from 'robots.csv'
-        transaction_data = robot_user.get_transaction()
-        last_5_transactions = transaction_data.tail(5)
+        transactions_data = alpaca_user.get_transactions()
+        transactions_data = transactions_data.drop(columns=['Username'])
+        last_5_transactions = transactions_data.tail(5)
 
         st.subheader("Latest Transactions")
         st.table(last_5_transactions)

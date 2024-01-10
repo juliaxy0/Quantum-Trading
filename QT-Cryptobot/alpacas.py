@@ -589,8 +589,10 @@ class alpacaClass:
         except Exception as e:
             print(f"Error fetching latest cash : {e}")
 
-    def get_transactions(file_path='QT-Cryptobot/Data/transactions.csv'):
+    def get_transactions(_self):
         try:
+            file_path='E:/QuantumTrading/QT-Cryptobot/Data/transactions.csv'
+
             # Read transactions from CSV file
             transactions_data = pd.read_csv(file_path)
 

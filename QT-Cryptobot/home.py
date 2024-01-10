@@ -11,7 +11,7 @@ from datetime import datetime
 from PIL import Image
 from streamlit_extras.app_logo import add_logo
 
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(layout="wide", initial_sidebar_state="collapsed",page_title="Home", page_icon = ":money_with_wings:")
 
 # Get parameter from link for auth
 username_param = st.experimental_get_query_params().get("id", [""])[0]
@@ -43,6 +43,7 @@ robot_user = robotClass(username_param)
 
 welcome_string = f"Welcome back {alpaca_user.username}!"
 st.title(welcome_string)
+st.markdown("")
 
 # creating a single-element container
 placeholder = st.empty()
@@ -111,7 +112,7 @@ while True:
         link_close = "${:,.2f}".format(link_current_close)
         delta_link = round(link_current_close - link_last_close, 2)
         
-        statusColumn, btcColumn, ethColumn, ltcColumn, linkColumn , moreColumn = st.columns([1.,1,0.9,0.7,0.7,0.2])
+        statusColumn, btcColumn, ethColumn, ltcColumn, linkColumn = st.columns([1.,1,0.9,0.8,0.8])
 
         with statusColumn:
              
@@ -144,13 +145,18 @@ while True:
                 with btc1:
                     st.markdown("")
                     st.image(btc_image, width=50, use_column_width=False)
+                    st.markdown("")
 
                 btc2.metric(
 
                         label="Bitcoin",
                         value=btc_close,
                         delta=delta_btc
+                        
                     )
+                
+                with btc2:
+                    st.caption("")
                 
         with ethColumn:
              
@@ -163,12 +169,16 @@ while True:
                 with eth1:
                     st.markdown("")
                     st.image(eth_image, width=50, use_column_width=False)
+                    st.markdown("")
 
                 eth2.metric(
                         label="Ethereum",
                         value=eth_close,
                         delta=delta_eth
-                    )        
+                    )  
+                  
+                with eth2:
+                    st.caption("")    
                 
         with ltcColumn:
              
@@ -181,12 +191,16 @@ while True:
                 with ltc1:
                     st.markdown("")
                     st.image(ltc_image, width=50, use_column_width=False)
+                    st.markdown("")
 
                 ltc2.metric(
                         label="Litecoin",
                         value=ltc_close,
                         delta=delta_ltc
                     )
+                
+                with ltc2:
+                    st.caption("")  
                 
         with linkColumn:
              
@@ -199,20 +213,16 @@ while True:
                 with link1:
                     st.markdown("")
                     st.image(link_image, width=50, use_column_width=False)
+                    st.markdown("")
 
                 link2.metric(
                         label="Chainlink",
                         value=link_close,
                         delta=delta_link
                     ) 
-        
-        with moreColumn:
-             
-            st.text("")
-            st.text("")
-            st.text("")
-            st.image(more_image, width=35, use_column_width=False)
-            st.text("")
+                
+                with link2:
+                    st.caption("")  
         
         ################################################ Second container with 2 column (assets)
 
@@ -378,14 +388,14 @@ while True:
                 
                 st.caption("The portfolio diagram illustrates your cash position and asset distribution.")
 
-        info , order = st.columns([0.5,1])
+        info , order = st.columns([0.47,1])
         
         with info:
 
             infoContainer = st.container(border=True)
 
             with infoContainer:
-                st.image(info_image, width=405, use_column_width=False)
+                st.image(info_image, use_column_width=True)
 
         with order:
 
@@ -394,7 +404,7 @@ while True:
             with recentOrderContainer:
                     
                 # Read data from 'Data/transactions.csv' into a DataFrame
-                transactions_data = robot_user.get_transaction()
+                transactions_data = alpaca_user.get_transactions()
                 transactions_data = transactions_data.drop(columns=['Username'])
 
                 # Display the last 5 rows of the DataFrame
