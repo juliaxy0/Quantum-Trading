@@ -8,6 +8,8 @@ class Robot(BaseModel):
     Symbol: str = Field(...)
     Quantity: Decimal  = Field(...)
     Strategy: str = Field(...)
+    Sentiment : bool = Field(...)
+    Prediction : bool = Field(...)
     Status: str = Field(...)
     Bought: Decimal  = Field(...)
 
@@ -20,6 +22,8 @@ class Robot(BaseModel):
                 "Symbol": "Miguel de Cervantes",
                 "Quantity": "0.01",
                 "Strategy": "MACD",
+                "Sentiment" : True,
+                "Prediction" : True,
                 "Status": "Running",
                 "Bought": "0.01"
             }
@@ -27,7 +31,9 @@ class Robot(BaseModel):
 
 class RobotUpdate(BaseModel):
     Quantity: Optional[float]
-    Stratergy: Optional[str]
+    Strategy: Optional[str]
+    Sentiment:Optional[bool]
+    Prediction:Optional[bool]
     Status: Optional[str]
 
     class Config:
@@ -35,8 +41,10 @@ class RobotUpdate(BaseModel):
         json_schema_extra = {
             "example": {
                 "Quantity": 0.01,
-                "Stratergy": "MACD",
+                "Strategy": "MACD",
                 "Status": "Running",
+                "Sentiment" : True,
+                "Prediction" : True,
             }
         }
 

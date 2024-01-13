@@ -3,6 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 from typing import List
 from bson import ObjectId
+from passlib.hash import pbkdf2_sha256
 
 from app.models.user import User, UserResponse, UserUpdate
 
@@ -10,18 +11,18 @@ user = APIRouter()
 
 @user.post("/login")
 async def login(request: Request, user_info: dict = Body(...)):
-    username = user_info.get("username")
+    email = user_info.get("email")
     password = user_info.get("password")
 
-    if not username or not password:
+    if not email or not password:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid input")
 
     user_collection = request.app.database["users"]
 
-    if (user := user_collection.find_one({"username": username})) is not None:
-        if user["password"] == password:
-            # Authentication successful
-            return {"message": "Login successful", "authenticated": True, "_id": str(user["_id"])}
+    if (user := user_collection.find_one({"email": email})) is not None:
+        if pbkdf2_sha256.verify(password, user["password"]):
+            # Authentication successful, return user information
+            return {"message": "Login successful", "authenticated": True, "email": email, "password": password, "_id": str(user["_id"])}
 
     # If the user is not found or the password doesn't match
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
@@ -34,7 +35,7 @@ def find_user(id: str, request: Request):
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid user ID format")
     
     if (user := request.app.database["users"].find_one({"_id": id})) is not None:
-        user_response = UserResponse(password=user.get('password'),username=user.get('username'), api_key=user.get('api_key'), secret_key=user.get('secret_key'))
+        user_response = UserResponse(email= user.get('email'),password=user.get('password'),username=user.get('username'), api_key=user.get('api_key'), secret_key=user.get('secret_key'))
         return user_response.dict()
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {id} not found")
 
@@ -42,13 +43,13 @@ def find_user(id: str, request: Request):
 @user.post("/create", response_description="Create a new user", status_code=status.HTTP_201_CREATED, response_model=None)
 def create_user(request: Request, user: User = Body(...)):
     # Check if the username already exists
-    existing_user = request.app.database["user"].find_one({"username": user.username})
+    existing_user = request.app.database["users"].find_one({"username": user.username})
     if existing_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists")
 
     # If username doesn't exist, proceed to create the new user
     user_dict = jsonable_encoder(user)
-    new_user = request.app.database["user"].insert_one(user_dict)
+    new_user = request.app.database["users"].insert_one(user_dict)
     return None
 
 @user.get("/", response_description="List all users", response_model=List[User])

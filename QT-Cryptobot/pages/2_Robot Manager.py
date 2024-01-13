@@ -39,9 +39,6 @@ robot_user = robotClass(username_param)
 # Use st.columns to create two columns
 view_column, form_column = st.columns([1,0.5])
 
-# creating a single-element container
-placeholder = st.empty()
-
 # Read data from 'robots.csv'
 data = alpaca_user.fetch_all_robot()
 
@@ -85,32 +82,37 @@ with form_column:
 
                     # Dropdown for new Strategy
                     strategy_options = ["MACD&RSI", "MA&BOL", "RSI", "MACD", "Stochastic"]
-                    new_strategy = st.selectbox('Strategy', strategy_options, index=strategy_options.index(default_values['Stratergy']))
+                    new_strategy = st.selectbox('Strategy', strategy_options, index=strategy_options.index(default_values['Strategy']))
 
                     new_status = st.selectbox('Status', ['Running', 'Stopped'], index=0 if default_values['Status'] == 'Running' else 1)
 
+                    # Checkbox for Sentiment Analysis
+                    new_sentiment_analysis = st.checkbox("Include Sentiment Analysis", value=default_values['Sentiment'])
 
-                    updateButton, deleteButton = st.columns(2)
+                    # Checkbox for Prediction Analysis
+                    new_prediction_analysis = st.checkbox("Include Prediction Analysis", value=default_values['Prediction'])
+
+                    st.caption("")
+
+                    c1, updateButton, c2, deleteButton, c3 = st.columns([0.1,0.5,0.1,0.5,0.1])
 
                     with updateButton:
 
                         # Update button
-                        if st.button('Update Robot', type="primary"):
+                        if st.button('Update Robot', type="primary" ,use_container_width=True):
                             # Check if a robot with the same parameters already exists
                             existing_data = data[data['Robot Name'] != selected_robot]  # Exclude the selected robot from the check
                             if ((existing_data['Symbol'] == new_symbol) &
-                                (existing_data['Stratergy'] == new_strategy)).any():
+                                (existing_data['Strategy'] == new_strategy)).any():
                                 st.error('Error: Robot with the same parameters already exists.')
                             else:
-                                robot_user.updateRobot(data, selected_robot, new_quantity, new_strategy, new_status)
-                                st.success(f'{selected_robot} details updated successfully!')
+                                robot_user.updateRobot(data, selected_robot, new_quantity, new_strategy, new_status, new_sentiment_analysis, new_prediction_analysis)
                                 st.rerun()
                     
                     with deleteButton:
                         # Delete button
-                        if st.button('Delete Robot', type="primary"):
+                        if st.button('Delete Robot', type="primary", use_container_width=True):
                             robot_user.deleteRobot(data, selected_robot)
-                            st.success(f'{selected_robot} deleted successfully!')
                             st.rerun()
 
                 else:
@@ -135,18 +137,28 @@ with form_column:
                 # Dropdown for Status
                 status_options = ["Stopped","Running"]
                 status = st.selectbox("Status", status_options, key="status_input", index=0)
+                
 
+                sentiment_analysis = st.checkbox("Include Sentiment Analysis")
+                prediction_analysis = st.checkbox("Include Prediction Analysis")
 
-                # Create button to trigger data fetching and CSV insertion
-                if st.form_submit_button("Create Robot" , type="primary"):
-                    # Call the function in alpaca.py to fetch data and insert into CSV
-                    created_successfully = robot_user.create_robot(symb, quantity, robot_name, strategy, status)
+                st.caption("")
 
-                    if created_successfully:
-                        st.success("Robot created successfully!")
-                        st.rerun()
-                    else:
-                        st.error("Error: Robot already exists.")
+                l1, buttons, l2 = st.columns([1,1,1])
+
+                with buttons:
+                    st.markdown("")
+                    # Create button to trigger data fetching and CSV insertion
+                    if st.form_submit_button("Create Robot" , type="primary" ,use_container_width=True):
+                        # Call the function in alpaca.py to fetch data and insert into CSV
+                        created_successfully = robot_user.create_robot(symb, quantity, robot_name, strategy, sentiment_analysis, prediction_analysis, status)
+
+                        if created_successfully:
+                            st.success("Robot created successfully!")
+                            st.rerun()
+                        else:
+                            
+                            st.error("Error: Robot already exists.")
 
         st.caption("*A single robot is limited to implementing just one strategy for a particular cryptocurrency.")
 
@@ -211,25 +223,13 @@ while True:
     with placeholderViewRobot.container():
 
         view_robot_data = alpaca_user.fetch_all_robot()
-        selected_data = view_robot_data.drop(columns=view_robot_data.columns.difference(['Robot Name','Symbol', 'Quantity', 'Stratergy', 'Status','Bought']))
-        st.table(selected_data)
+        selected_data = view_robot_data.drop(columns=view_robot_data.columns.difference(['Robot Name','Symbol', 'Quantity', 'Strategy', 'Sentiment', 'Prediction', 'Status','Bought']))
+        st.dataframe(selected_data,hide_index=True, use_container_width = True)
 
         st.info('Backtest robot with stratergies for more informed decisions', icon="ℹ️")
 
-    # View transaction placeholder
-    with placeholder.container(border=True):
-
-
-        # Read data from 'robots.csv'
-        transactions_data = alpaca_user.get_transactions()
-        transactions_data = transactions_data.drop(columns=['Username'])
-        last_5_transactions = transactions_data.tail(5)
-
-        st.subheader("Latest Transactions")
-        st.table(last_5_transactions)
-
         # Wait for 10 seconds before the next iteration
-        time.sleep(1)
+        time.sleep(60)
 
     
     

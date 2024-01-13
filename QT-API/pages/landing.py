@@ -1,8 +1,8 @@
 import streamlit as st
 
-user_id = st.experimental_get_query_params().get("id", [""])[0]
-
 st.set_page_config(initial_sidebar_state="collapsed")
+
+user_id = st.experimental_get_query_params().get("id", [""])[0]
 
 st.markdown(
     """

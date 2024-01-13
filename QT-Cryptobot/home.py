@@ -49,9 +49,6 @@ st.markdown("")
 placeholder = st.empty()
 
 
-
-
-
 # Loop to fetch current minute's data every 10 seconds
 while True:
 
@@ -112,7 +109,7 @@ while True:
         link_close = "${:,.2f}".format(link_current_close)
         delta_link = round(link_current_close - link_last_close, 2)
         
-        statusColumn, btcColumn, ethColumn, ltcColumn, linkColumn = st.columns([1.,1,0.9,0.8,0.8])
+        statusColumn, btcColumn, ethColumn, ltcColumn, linkColumn = st.columns([0.98,1,0.9,0.8,0.8])
 
         with statusColumn:
              
@@ -125,13 +122,13 @@ while True:
                 with status1:
                     st.markdown("")
                     st.image(alpaca_image, width=50, use_column_width=False)
+                    st.markdown("")
 
                 with status2:
 
                     options = ["Paper Trading"]
-                    selected_option = st.selectbox("Trading mode:", options, index=options.index("Paper Trading"), key = datetime.utcnow() )
-
-                st.caption("Powered by Alpaca Brokerage")
+                    selected_option = st.selectbox("Trading mode:", options, index=options.index("Paper Trading"), key = datetime.utcnow() ,help="Paper trading simulates trades without involving real money.")
+                    st.subheader("")
 
                 
         with btcColumn:
@@ -155,9 +152,6 @@ while True:
                         
                     )
                 
-                with btc2:
-                    st.caption("")
-                
         with ethColumn:
              
             ethContainer = st.container(border=True)
@@ -176,9 +170,7 @@ while True:
                         value=eth_close,
                         delta=delta_eth
                     )  
-                  
-                with eth2:
-                    st.caption("")    
+                   
                 
         with ltcColumn:
              
@@ -198,9 +190,7 @@ while True:
                         value=ltc_close,
                         delta=delta_ltc
                     )
-                
-                with ltc2:
-                    st.caption("")  
+            
                 
         with linkColumn:
              
@@ -220,9 +210,6 @@ while True:
                         value=link_close,
                         delta=delta_link
                     ) 
-                
-                with link2:
-                    st.caption("")  
         
         ################################################ Second container with 2 column (assets)
 
@@ -273,6 +260,7 @@ while True:
                         label="Buying Power",
                         value= buying_power_data,
                         delta= buying_power_delta,
+                        help="Buying Power represents the available funds for new trades."
                     )
 
                     # Equity
@@ -280,6 +268,7 @@ while True:
                         label="Equity",
                         value= equity_data, 
                         delta=equity_delta,
+                        help="Equity is the total value of your investments."
                     )
 
                     #Cash
@@ -287,6 +276,7 @@ while True:
                         label="Cash",
                         value= cash_data, 
                         delta=cash_delta,
+                        help="Cash denotes the available liquid funds."
                     )
 
                     # Daily PnL
@@ -294,6 +284,7 @@ while True:
                         label="Daily PnL",
                         value= pnl_data,
                         delta=pnl_delta,
+                        help="Daily P&L reflects the profit or loss incurred on the current trading day."
                     )
 
         ################################################ Third container with 2 line graphs (assets)
@@ -366,7 +357,10 @@ while True:
                     margin=dict(l=0, r=0, t=70, b=5) # set margins to zero
                 )
 
-                st.markdown("<p style='text-align:center'>Your Portfolio</p>", unsafe_allow_html=True)
+                t1 ,  mid, t2 , = st.columns([0.45,1,0.2])
+
+                with mid:
+                    st.markdown("Your Portfolio", help="The portfolio diagram illustrates your cash position and asset distribution.")
                 
                 # Update config to hide the fullscreen button
                 st.plotly_chart(fig, config={'displayModeBar': False})
@@ -384,34 +378,18 @@ while True:
                 except Exception as e:
                     # Handle the error, and create an empty DataFrame
                     empty_data = pd.DataFrame(columns=['Symbol', 'Quantity', 'Market Value'])
-                    st.table(empty_data)
-                
-                st.caption("The portfolio diagram illustrates your cash position and asset distribution.")
+                    st.table(empty_data, hide_index=True)
+            
+        with st.expander("Latest transactions"):
+            
+            # Read data from 'Data/transactions.csv' into a DataFrame
+            transactions_data = alpaca_user.get_transactions()
+            transactions_data = transactions_data.drop(columns=['Username'])
 
-        info , order = st.columns([0.47,1])
-        
-        with info:
-
-            infoContainer = st.container(border=True)
-
-            with infoContainer:
-                st.image(info_image, use_column_width=True)
-
-        with order:
-
-            recentOrderContainer = st.container(border=True)
-
-            with recentOrderContainer:
-                    
-                # Read data from 'Data/transactions.csv' into a DataFrame
-                transactions_data = alpaca_user.get_transactions()
-                transactions_data = transactions_data.drop(columns=['Username'])
-
-                # Display the last 5 rows of the DataFrame
-                last_5_transactions = transactions_data.tail(5)
-                st.markdown("Latest transactions")
-                st.table(last_5_transactions)
+            # Display the last 5 rows of the DataFrame
+            last_5_transactions = transactions_data.tail(10)
+            st.dataframe(last_5_transactions, hide_index=True, use_container_width = True)
 
         # Wait for 10 seconds before the next iteration
-        time.sleep(1)
+        time.sleep(60)
 

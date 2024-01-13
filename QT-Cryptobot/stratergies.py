@@ -4,26 +4,48 @@ import pandas as pd
 
 class stratergiesClass:
 
-    def __init__(self):
-        self.weights = {
-            'macd_rsi': 0.5,
-            'sentiment': 0.25,
-            'prediction': 0.25,
-        }
-
     ################################## CUSTOM STRATERGY
     
     @staticmethod
-    def DecisionMaker(coin,current_data):
+    def DecisionMaker(coin, sentiment,prediction,strategy, current_data):
         try:
 
+            if strategy == "MACD&RSI":
+                buy_condition, sell_condition = stratergiesClass.macd_rsi(current_data)
+            elif strategy == "SMA":
+                buy_condition, sell_condition = stratergiesClass.sma_strategy(current_data)
+            elif strategy == "RSI":
+                buy_condition, sell_condition = stratergiesClass.rsi_strategy(current_data)
+            elif strategy == "MACD":
+                    buy_condition, sell_condition = stratergiesClass.macd_strategy(current_data)
+            elif strategy == "BB":
+                buy_condition, sell_condition = stratergiesClass.bb_strategy(current_data)
+
             # Get all components
-            buy_condition, sell_condition = stratergiesClass.macd_rsi(current_data)
             sentiment_score = stratergiesClass.check_sentiment(coin)
             ml_prediction = stratergiesClass.check_prediction(coin)
 
+            if sentiment and prediction:
+                weights = {
+                    'technical': 0.5,
+                    'sentiment': 0.25,
+                    'prediction': 0.25,
+                }
+            elif sentiment and not prediction:
+                weights = {
+                    'technical': 0.5,
+                    'sentiment': 0.5,
+                    'prediction': 0,
+                }
+            elif prediction and not sentiment:
+                weights = {
+                    'technical': 0.5,
+                    'sentiment': 0,
+                    'prediction': 0.5,
+                }
+
             # Calculate based on weightage
-            weighted_score = stratergiesClass.calculate_weighted_score(buy_condition, sell_condition, sentiment_score, ml_prediction)
+            weighted_score = stratergiesClass.calculate_weighted_score(weights, buy_condition, sell_condition, sentiment_score, ml_prediction)
 
             if buy_condition: 
                 if weighted_score >= 0.5:
@@ -50,25 +72,25 @@ class stratergiesClass:
 
             # Check if it's a buy condition
             if buy_condition:
-                macd_rsi_weighted_score = self.weights['macd_rsi']
+                technical_weighted_score = self.weights['technical']
                 sentiment_weighted_score = self.weights['sentiment']
                 prediction_weighted_score = self.weights['prediction']
 
                 # Calculate the weighted score for the buy condition
                 weighted_score = (
-                    macd_rsi_weighted_score * 1 +  # Assuming buy_condition is True for MACD/RSI
+                    technical_weighted_score * 1 +  # Assuming buy_condition is True 
                     sentiment_weighted_score * (sentiment_score >= 5) +
                     prediction_weighted_score * (ml_prediction == 1)
                 )
             # Check if it's a sell condition
             elif sell_condition:
-                macd_rsi_weighted_score = self.weights['macd_rsi']
+                technical_weighted_score = self.weights['technical']
                 sentiment_weighted_score = self.weights['sentiment']
                 prediction_weighted_score = self.weights['prediction']
 
                 # Calculate the weighted score for the sell condition
                 weighted_score = (
-                    macd_rsi_weighted_score * 0 +  # Assuming buy_condition is False for MACD/RSI
+                    technical_weighted_score * 0 +  # Assuming buy_condition is False 
                     sentiment_weighted_score * (sentiment_score <= 5) +
                     prediction_weighted_score * (ml_prediction == 0)
                 )

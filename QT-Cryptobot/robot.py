@@ -11,36 +11,38 @@ from alpaca.data.requests import CryptoBarsRequest
 
 class robotClass:
 
-    def __init__(_self, username):
+    def __init__(_self, id):
     
         # Getting user's credentials
-        _self.username = username
-        api_key, secret_key = _self.get_user_by_username(_self.username)
-        API_KEY = api_key
-        SECRET_KEY = secret_key
+        _self.id = id
+        # Getting user's credentials
+        _self.password, _self.username, _self.api_key, _self.secret_key = _self.get_user_by_username(_self.id)
+        
 
         # Alpaca Trading Client
-        _self.trading_client = TradingClient(API_KEY,SECRET_KEY,paper=True)
+        _self.trading_client = TradingClient(_self.api_key, _self.secret_key, paper=True)
         _self.client = CryptoHistoricalDataClient()
 
-    def get_user_by_username(_self,username):
+    def get_user_by_username(_self,id):
         # Replace the URL with your actual API endpoint
-        api_url = f"http://127.0.0.1:8000/user/{username}"
+        api_url = f"http://127.0.0.1:8000/user/{id}"
         
         # Make a GET request to fetch user data
         response = requests.get(api_url)
         
         if response.status_code == 200:
             user_data = response.json()
+            password = user_data.get("password")
+            username = user_data.get("username")
             api_key = user_data.get("api_key")
             secret_key = user_data.get("secret_key")
-            return api_key, secret_key
+            return password, username, api_key, secret_key
         else:
             print(f"Error fetching user data. Status code: {response.status_code}, Details: {response.text}")
             return None
         
     # Function to fetch data and insert into robots.csv
-    def create_robot(_self, symbol, quantity, robot_name, strategy, status):
+    def create_robot(_self, symbol, quantity, robot_name, strategy, sentiment_analysis, prediction_analysis,status ):
         
         try:
 
@@ -48,11 +50,13 @@ class robotClass:
 
             # Create a DataFrame with the provided data
             robot_data = pd.DataFrame({
-                'Username' : [_self.username],
+                'id' : [_self.id],
                 'RobotName': [robot_name],
                 'Symbol': [symbol],
                 'Quantity': [quantity],
                 'Strategy': [strategy],
+                'Sentiment': [sentiment_analysis],
+                'Prediction': [prediction_analysis],
                 'Status': [status],
                 'Bought': [0.0]
             })
@@ -67,7 +71,7 @@ class robotClass:
             # Check if a row with the same values already exists
             if not existing_data[
                 ((existing_data['Symbol'] == symbol) &
-                (existing_data['Stratergy'] == strategy)) |
+                (existing_data['Strategy'] == strategy)) |
                 (existing_data['Robot Name'] == robot_name)
             ].empty:
                 print("Error: Robot with the same parameters already exists.")
@@ -78,7 +82,7 @@ class robotClass:
             print("Success: Robot successfully created locally.")
 
             # Creating in MongoDB
-            url = f"http://127.0.0.1:8000/user/{_self.username}/robot/"  # Adjust the URL to include the user ID
+            url = f"http://127.0.0.1:8000/user/{_self.id}/robot/"  # Adjust the URL to include the user ID
 
             # Data for the new robot
             new_robot_data = {
@@ -86,6 +90,8 @@ class robotClass:
                 "Symbol": symbol,
                 "Quantity": quantity,
                 "Strategy": strategy,
+                'Sentiment': sentiment_analysis,
+                'Prediction': prediction_analysis,
                 "Status": status,
                 "Bought": 0.0,
             }
@@ -119,7 +125,7 @@ class robotClass:
         print("Robot data deleted locally.")
 
         # Delete the selected robot in MongoDB
-        url = f"http://127.0.0.1:8000/user/{_self.username}/robot/{selected_robot}"
+        url = f"http://127.0.0.1:8000/user/{_self.id}/robot/{selected_robot}"
 
         try:
             # Make a DELETE request to remove the robot
@@ -137,24 +143,27 @@ class robotClass:
             print(f"Error making the delete request: {e}")
 
 
-    def updateRobot(_self, data, selected_robot, new_quantity, new_strategy, new_status):
+    def updateRobot(_self, data, selected_robot, new_quantity, new_strategy, new_status, new_sentiment_analysis, new_prediction_analysis):
         # Update the data
         data.loc[data['Robot Name'] == selected_robot, 'Quantity'] = new_quantity
-        data.loc[data['Robot Name'] == selected_robot, 'Stratergy'] = new_strategy
+        data.loc[data['Robot Name'] == selected_robot, 'Strategy'] = new_strategy
+        data.loc[data['Robot Name'] == selected_robot, 'Sentiment'] = new_sentiment_analysis
+        data.loc[data['Robot Name'] == selected_robot, 'Prediction'] = new_prediction_analysis
         data.loc[data['Robot Name'] == selected_robot, 'Status'] = new_status
 
         # Save the updated data to the CSV file
         data.to_csv('Data/robots.csv', index=False)
         print("Robot data updated localy.")
 
-        username = _self.username
         # Update robot on mongodb
-        url = f"http://127.0.0.1:8000/user/{username}/robot/{selected_robot}"  # Replace with the actual URL of your FastAPI server
+        url = f"http://127.0.0.1:8000/user/{_self.id}/robot/{selected_robot}"  # Replace with the actual URL of your FastAPI server
 
         # Data for the robot update
         robot_update_data = {
             "Quantity": new_quantity,
-            "Stratergy": new_strategy,
+            "Strategy": new_strategy,
+            'Sentiment': new_sentiment_analysis,
+            'Prediction': new_prediction_analysis,
             "Status": new_status,
         }
 
@@ -249,7 +258,7 @@ class robotClass:
 
             # Create a DataFrame with 'Username', 'Robot Name', 'Profit', and 'Timestamp'
             profit_data = pd.DataFrame({
-                'Username': [_self.username] * len(merged_data),  # Repeat username for each row
+                'id': [_self.id] * len(merged_data),  # Repeat username for each row
                 'Robot Name': merged_data['Robot Name'],
                 'Profit': merged_data['Profit'],
                 'Timestamp': [datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]] * len(merged_data)

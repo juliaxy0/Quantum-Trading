@@ -17,6 +17,8 @@ with st.sidebar:
 
     sidebarContainer = st.empty()
 
+    st.markdown("")
+    st.markdown("")
 
     if st.button("Logout"):
         st.markdown(f'<meta http-equiv="refresh" content="0;URL=http://localhost:8501/">', unsafe_allow_html=True)
@@ -30,20 +32,22 @@ css = '''
 '''
 st.markdown(css, unsafe_allow_html=True)
 
-st.subheader("Profile Detail")
+
 
 # Create alpaca user
 alpaca_user = alpacaClass(username_param)
 robot_user = robotClass(username_param)
 
 # Use st.columns to create two columns
-profile_column, transaction_column = st.columns([0.6,1])
+left , profile_column, right = st.columns([1,1,1])
 
 
 ############################## column create and update on the right
 
 # Form to create a robot
 with profile_column:
+
+    st.markdown("<h3 style='text-align:center'>Profile Detail</h3>", unsafe_allow_html=True)
 
     with st.form("update_form"):
 
@@ -61,14 +65,15 @@ with profile_column:
         secret_key_value = st.text_input("Secret Key", value=alpaca_user.secret_key, key="secret_key", disabled=False)
 
         st.markdown("")
-        if st.form_submit_button("Update" , type="primary"):
-            if alpaca_user.update_user_details(password=password_value, api_key=api_key_value, secret_key=secret_key_value):
-                st.success("User details updated successfully!")
-            else:
-                st.error("Failed to update user details.")
 
-with transaction_column:
-    st.markdown("")
+        c1 , button, c2 = st.columns([1,1,1])
+
+        with button:
+            if st.form_submit_button("Update" , type="primary", use_container_width=True):
+                if alpaca_user.update_user_details(password=password_value, api_key=api_key_value, secret_key=secret_key_value):
+                    st.success("User details updated successfully!")
+                else:
+                    st.error("Failed to update user details.")
 
 # Loop to fetch current minute's data every 10 seconds
 while True:
@@ -76,7 +81,7 @@ while True:
     with sidebarContainer.container():
     
         logs = pd.read_csv("logs.csv")
-        logs = logs.tail(5)
+        logs = logs.tail(3)
         st.markdown("")
         st.dataframe(logs, hide_index=True, use_container_width = True)
 
@@ -85,7 +90,7 @@ while True:
     robot_user.updateProfit()
         
     # Wait for 10 seconds before the next iteration
-    time.sleep(1)
+    time.sleep(60)
 
     
     

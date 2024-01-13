@@ -566,7 +566,7 @@ class alpacaClass:
         try:
             # Read data from 'robots.csv'
             robots_data = pd.read_csv('Data/robots.csv')
-            filtered_data = robots_data[robots_data['Username'] == _self.username]
+            filtered_data = robots_data[robots_data['id'] == _self.id]
             return filtered_data
 
         except Exception as e:
@@ -664,13 +664,13 @@ class alpacaClass:
             order_id = _self.trading_client.get_order_by_client_id(market_order_data.client_order_id)
 
             # Append order information to transactions.csv
-            order_info = {'Username': _self.username, 'robot_name': robot_name, 'client_order_id': market_order_data.client_order_id, 'order_id': order_id.id, 'quantity': market_order_data.qty, 'filled_price': order_id.filled_avg_price, 'type': "Buy"} #, 
+            order_info = {'id': _self.id, 'robot_name': robot_name, 'client_order_id': market_order_data.client_order_id, 'order_id': order_id.id, 'quantity': market_order_data.qty, 'filled_price': order_id.filled_avg_price, 'type': 'Buy'} 
             transactions_data = pd.DataFrame([order_info])
             transactions_data.to_csv('Data/transactions.csv', mode='a', header=not os.path.exists('Data/transactions.csv'), index=False)
-            print(f"Robot {robot_name} transaction saved locally")
+            print(f"Robot {robot_name} buy transaction saved locally")
 
             # Update MongoDB with the transaction
-            url = f"http://127.0.0.1:8000/user/{_self.username}/robot/{robot_name}/transaction/"
+            url = f"http://127.0.0.1:8000/user/{_self.id}/robot/{robot_name}/transaction/"
             
             # Converting to string
             time = str(formatted_time)
@@ -692,13 +692,13 @@ class alpacaClass:
 
                 # Check the response
                 if response.status_code == 201:
-                    print("Transaction added to MongoDB successfully!")
+                    print("Buy transaction added to MongoDB successfully!")
                 else:
-                    print(f"Failed to add transaction with status code {response.status_code}")
+                    print(f"Failed to add buy transaction with status code {response.status_code}")
                     print("Response text:", response.text)
 
             except requests.exceptions.RequestException as e:
-                print(f"Error making the transaction request: {e}")
+                print(f"Error making the buy transaction request: {e}")
 
         except Exception as e:
             print(f"Error placing buy order transaction: {e}")
@@ -724,9 +724,41 @@ class alpacaClass:
             order_id = _self.trading_client.get_order_by_client_id(market_order_data.client_order_id)
 
             # Append order information to transactions.csv
-            order_info = {'robot_name': robot_name, 'client_order_id': market_order_data.client_order_id, 'order_id': order_id.id, 'quantity': market_order_data.qty, 'filled_price': order_id.filled_avg_price,'type': "sell"} 
+            order_info = {'id': _self.id, 'robot_name': robot_name, 'client_order_id': market_order_data.client_order_id, 'order_id': order_id.id, 'quantity': market_order_data.qty, 'filled_price': order_id.filled_avg_price,'type': "sell"} 
             transactions_data = pd.DataFrame([order_info])
             transactions_data.to_csv('Data/transactions.csv', mode='a', header=not os.path.exists('Data/transactions.csv'), index=False)
+            print(f"Robot {robot_name} sell transaction saved locally")
+
+            # Update MongoDB with the transaction
+            url = f"http://127.0.0.1:8000/user/{_self.id}/robot/{robot_name}/transaction/"
+            
+            # Converting to string
+            time = str(formatted_time)
+            transaction_id = str(order_id.id)
+            filled_price = float(order_id.filled_avg_price)
+
+            transaction_data = {
+                "time" : time,
+                "transaction_id" : transaction_id,
+                "quantity": quantity,
+                "filled_price": filled_price,
+                "type": "Sell",
+            }
+
+            try:
+                # Make a POST request to add the transaction
+                response = requests.post(url, json=transaction_data)
+                response.raise_for_status()  # Raise an exception for HTTP errors
+
+                # Check the response
+                if response.status_code == 201:
+                    print("Sell transaction added to MongoDB successfully!")
+                else:
+                    print(f"Failed to add sell transaction with status code {response.status_code}")
+                    print("Response text:", response.text)
+
+            except requests.exceptions.RequestException as e:
+                print(f"Error making the sell transaction request: {e}")
 
         except Exception as e:
             print(f"Error placing sell order: {e}")
@@ -739,7 +771,9 @@ class alpacaClass:
         for _, row in all_robot_data.iterrows():
             robot_name = row['Robot Name']
             status = row['Status']
-            strategy = row['Stratergy']
+            strategy = row['Strategy']
+            sentiment = row['Sentiment']
+            prediction = row['Prediction']
             coin = row['Symbol']
             quantity = row['Quantity']
 
@@ -752,16 +786,16 @@ class alpacaClass:
                     sell_condition = False
 
                     # Execute the corresponding strategy method
-                    if strategy == "DecisionMaker":
-                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,current_data)
+                    if strategy == "MACD&RSI":
+                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"MACD&RSI",current_data)
                     elif strategy == "SMA":
-                        buy_condition, sell_condition = stratergiesClass.sma_strategy(current_data)
+                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"SMA",current_data)
                     elif strategy == "RSI":
-                        buy_condition, sell_condition = stratergiesClass.rsi_strategy(current_data)
+                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"RSI",current_data)
                     elif strategy == "MACD":
-                        buy_condition, sell_condition = stratergiesClass.macd_strategy(current_data)
+                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"MACD",current_data)
                     elif strategy == "BB":
-                        buy_condition, sell_condition = stratergiesClass.bb_strategy(current_data)
+                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"BB",current_data)
 
                     # Execute buy and sell orders based on signals
                     if buy_condition:
@@ -832,7 +866,7 @@ class alpacaClass:
 
                 # Update the 'Bought' field in MongoDB
                 username = _self.username
-                url = f"http://127.0.0.1:8000/user/{username}/robot/{robot_name}/update_bought"
+                url = f"http://127.0.0.1:8000/user/{_self.id}/robot/{robot_name}/update_bought"
 
                 # Data for the robot update
                 robot_update_data = {

@@ -35,7 +35,7 @@ st.markdown(css, unsafe_allow_html=True)
 ############################################# Real time Dashboard #####################################
 
 # Dashboard title
-st.subheader('Real-time Crypto Analysis and Monitoring')
+st.subheader("Real-time Crypto Analysis and Monitoring")
 st.markdown("")
 
 # Create alpaca user
@@ -64,10 +64,10 @@ with eduContainer:
         st.markdown("")
 
     with sentimenEdu:
-        st.image(scale, width=650, use_column_width=False)
+        st.image(scale, width=600, use_column_width=False)
 
     with MLEdu:
-        st.image(arrow, width=650, use_column_width=False)
+        st.image(arrow, width=600, use_column_width=False)
         
 statusContainer = st.container()
 
@@ -108,7 +108,7 @@ with placeholder.container():
 
 
         tradingview_widget_code = """
-        <iframe src="https://s.tradingview.com/embed-widget/advanced-chart/?symbol=BTCUSD&amp;interval=1&amp;timezone=Asia%2FSingapore&amp;theme=dark&amp;style=1&amp;locale=en&amp;enable_publishing=false&amp;hide_side_toolbar=false&amp;allow_symbol_change=true&amp;studies=%5B%5D&amp;show_popup_button=true&amp;popup_width=1000&amp;popup_height=70" style="width: 100%; height: 500px;" frameborder="0" allowtransparency="true" allowfullscreen="true" scrolling="no"></iframe>
+        <iframe src="https://s.tradingview.com/embed-widget/advanced-chart/?symbol=BTCUSD&amp;interval=1&amp;timezone=Asia%2FSingapore&amp;theme=dark&amp;style=1&amp;locale=en&amp;enable_publishing=false&amp;hide_side_toolbar=false&amp;allow_symbol_change=true&amp;studies=%5B%5D&amp;show_popup_button=true&amp;popup_width=1000&amp;popup_height=70" style="width: 100%; height: 498px;" frameborder="0" allowtransparency="true" allowfullscreen="true" scrolling="no"></iframe>
         """
 
         # Display the TradingView widget using an iframe
@@ -122,21 +122,25 @@ with placeholder.container():
 
         # Manual order form
         with st.form("my_form"):
-            st.subheader("Create an order")
+            st.subheader("Create an order", help="Manual orders are not currently being recorded or tracked for profit.")
             st.text_input("Available Cash:", value=f"${latest_cash}", key="cash", disabled=True)
             symbol = st.selectbox("Select Crypto Symbol:", options=['BTC/USD', 'ETH/USD', 'LTC/USD', 'LINK/USD'], index=0)
-            quantity = st.number_input("Enter Quantity:", min_value=0.01, step=0.1, format="%.2f")
+            quantity = st.number_input("Enter Quantity:", min_value=0.01, step=0.1, format="%.2f", help="Min quantity for LTC/USD and LINK/USD is 1")
             order_type = st.selectbox("Select Order Type:", options=['Buy', 'Sell'], index=0)
 
-            # Submit Order Button
-            if st.form_submit_button("Submit Order" , type="primary"):
-                status = alpaca_user.manual_order(symbol, quantity,order_type)
-                # Check buying status
-                if status:
-                    st.success("Order submitted successfully!")
-                else:
-                    st.error("Insufficient asset. Cannot submit order.")
-            st.caption("*Min quantity for LTC/USD and LINK/USD is 1")
+            c1 , button, c2 = st.columns([0.5,1,0.5])
+
+            with button:
+                st.markdown("")
+                # Submit Order Button
+                if st.form_submit_button("Submit Order" , type="primary",use_container_width=True):
+                    status = alpaca_user.manual_order(symbol, quantity,order_type)
+                    # Check buying status
+                    if status:
+                        st.success("Order submitted successfully!")
+                    else:
+                        st.error("Insufficient asset. Cannot submit order.")
+                st.markdown("")
     
     st.info("The OHLC drawboard is provided by TradingView, intended solely for self-analysis purposes. Please refer the top columns for Alpaca's pricing information", icon="ℹ️")
 
@@ -309,4 +313,4 @@ while True:
             )
     
     # Wait for 10 seconds before the next iteration
-    time.sleep(1)
+    time.sleep(60)

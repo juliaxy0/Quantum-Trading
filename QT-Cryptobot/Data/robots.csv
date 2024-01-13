@@ -1,3 +1,2 @@
-Username,Robot Name,Symbol,Quantity,Stratergy,Status,Bought
-juliaxy0,robot1,BTC/USD,0.03,RSI,Running,8.820000000000014
-juliaxy0,robot12,BTC/USD,0.03,Stochastic,Running,0.0
+id,Robot Name,Symbol,Quantity,Strategy,Status,Sentiment,Prediction,Bought
+65a2d5b5beb11bc0d9d9478e,robot1,BTC/USD,0.03,RSI,Stopped,False,True,0.12

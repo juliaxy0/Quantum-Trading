@@ -116,5 +116,5 @@ async def root():
         return {'text':'Welcome to QuantumTrading Database API'} 
  
 database.include_router(user, tags=["user"], prefix="/user") 
-database.include_router(robot, tags=["robot"], prefix="/user/{username}/robot")
-database.include_router(transaction, tags=["transaction"], prefix="/user/{username}/robot/{robotName}/transaction")
+database.include_router(robot, tags=["robot"], prefix="/user/{id}/robot")
+database.include_router(transaction, tags=["transaction"], prefix="/user/{id}/robot/{robotName}/transaction")
