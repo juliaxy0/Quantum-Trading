@@ -75,7 +75,7 @@ def main():
 
         if st.button("Dont have an account yet?  Sign Up"):
             switch_page("create")
-   
+
     
 def authenticate_user(email, password):
     login_url = "http://127.0.0.1:8000/user/login"

@@ -3,7 +3,6 @@ import streamlit as st
 from alpacas import alpacaClass
 from robot import robotClass
 import time
-import plotly.graph_objects as go
 from streamlit_extras.app_logo import add_logo
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed",page_title="Profile Details", page_icon = ":money_with_wings:")

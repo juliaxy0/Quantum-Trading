@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from bson import ObjectId
-from app.models.robot import Robot, RobotUpdate, BoughtUpdate 
+from app.models.robot import Robot, RobotUpdate, BoughtUpdate
 
 robot = APIRouter()
 

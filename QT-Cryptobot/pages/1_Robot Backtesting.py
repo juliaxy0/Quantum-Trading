@@ -2,7 +2,6 @@ import pandas as pd
 import streamlit as st
 from alpacas import alpacaClass
 import time
-import pandas as pd
 from robot import robotClass
 import plotly.graph_objects as go
 from backtest import backtestClass

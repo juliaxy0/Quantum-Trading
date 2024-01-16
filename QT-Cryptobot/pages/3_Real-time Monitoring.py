@@ -2,7 +2,6 @@ import streamlit as st
 import time
 from alpacas import alpacaClass
 from robot import robotClass
-import time
 from stratergies import stratergiesClass
 from PIL import Image
 import pandas as pd

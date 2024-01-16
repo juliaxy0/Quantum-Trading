@@ -3,7 +3,6 @@ import pandas as pd
 import os
 import csv
 import requests
-from pathlib import Path
 
 # Alpaca
 from alpaca.trading.client import TradingClient
@@ -100,7 +99,7 @@ class alpacaClass:
             # Get the current timestamp with hour, minute, and seconds
             current_time = datetime.utcnow().replace(tzinfo=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
-            # Buying power 
+            # Buying power
             bp = float(_self.account.buying_power)
 
             # Equity
@@ -154,7 +153,7 @@ class alpacaClass:
                     market_val1 = float(position.market_value)
                     pnl1 = float(position.unrealized_pl)
 
-                    # Format 
+                    # Format
                     price = "${:,.2f}".format(price1)
                     market_val = "${:,.2f}".format(market_val1)
                     pnl = "${:,.2f}".format(pnl1)
@@ -199,7 +198,7 @@ class alpacaClass:
                         'symbol': [symbol],
                         'current_close': [last_row['close']],
                         'last_close': [second_last_row['close']]
-                    })  
+                    })
 
                     # Append the new DataFrame to the list
                     dfs.append(symbol_df)
@@ -655,8 +654,7 @@ class alpacaClass:
                 side=OrderSide.BUY,
                 time_in_force=TimeInForce.IOC,
                 client_order_id= formatted_time,
-            )  
-
+            )
             # Market order
             market_order = _self.trading_client.submit_order(order_data=market_order_data)
 
@@ -747,7 +745,7 @@ class alpacaClass:
 
             try:
                 # Make a POST request to add the transaction
-                response = requests.post(url, json=transaction_data)
+                response = requests.post(url, json=transaction_data, timeout=30)
                 response.raise_for_status()  # Raise an exception for HTTP errors
 
                 # Check the response
@@ -778,7 +776,7 @@ class alpacaClass:
             quantity = row['Quantity']
 
             # Check if the status is "Running" before triggering the strategy
-            if coin == crypto: 
+            if coin == crypto:
                 if status == "Running":
 
                     # Signals initialization

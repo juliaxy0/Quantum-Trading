@@ -19,7 +19,7 @@ st.markdown(
 def main():
     st.title("Welcome to Quantum Trading")
     st.title("")
-    
+
 
     # Add any other content or information about your app
 

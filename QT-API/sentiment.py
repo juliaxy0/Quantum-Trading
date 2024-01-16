@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 import requests
 from transformers import pipeline
 import pandas as pd
-import os
 
 class sentimentAnalysisClass:
 
@@ -16,7 +15,7 @@ class sentimentAnalysisClass:
         self.crypto = crypto
         
     def search_for_stock_news_links(self,ticker):
-        search_url = 'https://cryptonews.net/?q={}&rubricId=-1&location=title&type=any&time=past_day'.format(ticker) 
+        search_url = 'https://cryptonews.net/?q={}&rubricId=-1&location=title&type=any&time=past_day'.format(ticker)
         r = requests.get(search_url, timeout=30)
         soup = BeautifulSoup(r.text, 'html.parser')
         atags = soup.find_all('a', attrs ={'class': 'title'})
@@ -27,7 +26,7 @@ class sentimentAnalysisClass:
         ARTICLES = []
         for url in URLs:
             full_url = 'https://cryptonews.net'+ url
-            r = requests.get(full_url)
+            r = requests.get(full_url, timeout=30)
             soup = BeautifulSoup(r.text, 'html.parser')
             results = soup.find_all('p')
             text = [res.text for res in results]
@@ -63,10 +62,10 @@ class sentimentAnalysisClass:
         output = []
         for counter in range(len(summaries)):
             output_this = [
-                            crypto, 
-                            summaries[counter], 
-                            scores[counter]['label'], 
-                            scores[counter]['score'], 
+                            crypto,
+                            summaries[counter],
+                            scores[counter]['label'],
+                            scores[counter]['score'],
                             'https://cryptonews.net'+ urls[counter]
                         ]
             output.append(output_this)

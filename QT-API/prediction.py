@@ -8,7 +8,6 @@ from sklearn.model_selection import train_test_split, cross_val_score, Stratifie
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score
 import warnings
 
 
@@ -70,8 +69,8 @@ class PredictionClass:
                 # Predict for the next minute after the last data point
                 last_data_point = X.iloc[-1].values.reshape(1, -1)
                 last_data_point_scaled = self.scaler.transform(last_data_point.reshape(1, -1))
-                prediction_for_next_minute = svm_classifier.predict(last_data_point_scaled) 
-
+                prediction_for_next_minute = svm_classifier.predict(last_data_point_scaled)
+                
                 # Perform k-fold cross-validation
                 n_folds = 5
                 stratified_kfold = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=42)

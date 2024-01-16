@@ -25,7 +25,7 @@ def startup_event():
 # Endpoints
 @sentiment.get('/')
 async def root():
-        return {'text':'Welcome to QuantumTrading Sentiment Analysis API'}
+    return {'text':'Welcome to QuantumTrading Sentiment Analysis API'}
 
 def all_crypto_sa():
 
@@ -71,12 +71,12 @@ async def root():
 
 def all_crypto_predict():
 
-    try: 
+    try:
         btc = PredictionClass("btc")
         eth = PredictionClass("eth")
         link = PredictionClass("link")
         ltc = PredictionClass("ltc")
-    
+
 
         while True:
             btc.update_csv()
@@ -110,8 +110,8 @@ def startup_db_client():
 def shutdown_db_client():
     database.mongodb_client.close()
 
-@database.get('/')  
-async def root(): 
+@database.get('/')
+async def root():
         return {'text':'Welcome to QuantumTrading Database API'} 
  
 database.include_router(user, tags=["user"], prefix="/user") 

@@ -1,6 +1,4 @@
-from datetime import datetime
 import pandas as pd
-import os
 import numpy as np
 import pandas as pd
 import vectorbt as vbt
@@ -68,7 +66,7 @@ class backtestClass:
             return max_return_df
         
         except Exception as e:
-                print(f"Error backtesting datas: {e}")
+            print(f"Error backtesting datas: {e}")
 
     def backtest_indv(self, symbol, start_date, strategy):
 
@@ -110,7 +108,7 @@ class backtestClass:
 
 ################################## Stratergy
 
-    @staticmethod    
+    @staticmethod
     def SMA(data, fast=10, slow=20):
 
         try:
