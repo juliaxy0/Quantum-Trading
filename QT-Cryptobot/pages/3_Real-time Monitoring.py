@@ -36,6 +36,7 @@ st.markdown(css, unsafe_allow_html=True)
 
 # Dashboard title
 st.subheader("Real-time Crypto Analysis and Monitoring")
+st.caption("Stay updated with live analysis and monitoring of cryptocurrency trends as they happen.")
 st.markdown("")
 
 # Create alpaca user

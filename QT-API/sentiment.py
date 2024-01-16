@@ -17,7 +17,7 @@ class sentimentAnalysisClass:
         
     def search_for_stock_news_links(self,ticker):
         search_url = 'https://cryptonews.net/?q={}&rubricId=-1&location=title&type=any&time=past_day'.format(ticker) 
-        r = requests.get(search_url)
+        r = requests.get(search_url, timeout=30)
         soup = BeautifulSoup(r.text, 'html.parser')
         atags = soup.find_all('a', attrs ={'class': 'title'})
         hrefs = [link['href'] for link in atags]

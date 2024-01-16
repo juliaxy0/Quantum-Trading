@@ -84,7 +84,7 @@ def authenticate_user(email, password):
     payload = {"email": email, "password": password}
     
     # Make a POST request to the login endpoint with JSON payload
-    response = requests.post(login_url, json=payload)
+    response = requests.post(login_url, json=payload, timeout=30)
     
     if response.status_code == 200:
         print("Login successful!")

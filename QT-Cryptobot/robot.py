@@ -28,7 +28,7 @@ class robotClass:
         api_url = f"http://127.0.0.1:8000/user/{id}"
         
         # Make a GET request to fetch user data
-        response = requests.get(api_url)
+        response = requests.get(api_url, timeout=30)
         
         if response.status_code == 200:
             user_data = response.json()
@@ -98,7 +98,7 @@ class robotClass:
 
             try:
                 # Make a POST request to create a new robot
-                response = requests.post(url, json=new_robot_data)
+                response = requests.post(url, json=new_robot_data, timeout=30)
                 response.raise_for_status()  # Raise an exception for HTTP errors
 
                 # Check the response
@@ -129,7 +129,7 @@ class robotClass:
 
         try:
             # Make a DELETE request to remove the robot
-            response = requests.delete(url)
+            response = requests.delete(url, timeout=30)
             response.raise_for_status()  # Raise an exception for HTTP errors
 
             # Check the response
@@ -169,7 +169,7 @@ class robotClass:
 
         try:
             # Make a PUT request to update the robot
-            response = requests.put(url, json=robot_update_data)
+            response = requests.put(url, json=robot_update_data, timeout=30)
             response.raise_for_status()  # Raise an exception for HTTP errors
 
             # Check the response

@@ -95,7 +95,7 @@ with mid:
 
         # Create user using FastAPI route
         new_user_data = {"username": username, "email": email, "password": password, "api_key": api_key, "secret_key": secret_key}
-        response = requests.post("http://127.0.0.1:8000/user/create", json=new_user_data)
+        response = requests.post("http://127.0.0.1:8000/user/create", json=new_user_data, timeout=30)
 
         if response.status_code == 201:
             st.success("User created successfully!")

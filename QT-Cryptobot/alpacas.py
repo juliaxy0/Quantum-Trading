@@ -57,7 +57,7 @@ class alpacaClass:
         api_url = f"http://127.0.0.1:8000/user/{id}"
         
         # Make a GET request to fetch user data
-        response = requests.get(api_url)
+        response = requests.get(api_url, timeout=30)
         
         if response.status_code == 200:
             user_data = response.json()
@@ -77,7 +77,7 @@ class alpacaClass:
 
             user_update = {"password": password, "api_key": api_key, "secret_key": secret_key}
 
-            response = requests.put(api_url, json=user_update)
+            response = requests.put(api_url, json=user_update, timeout=30)
             if response.status_code == 200:
                 return True
             else:
@@ -687,7 +687,7 @@ class alpacaClass:
 
             try:
                 # Make a POST request to add the transaction
-                response = requests.post(url, json=transaction_data)
+                response = requests.post(url, json=transaction_data, timeout=30)
                 response.raise_for_status()  # Raise an exception for HTTP errors
 
                 # Check the response
@@ -875,7 +875,7 @@ class alpacaClass:
 
                 try:
                     # Make a PUT request to update the robot
-                    response = requests.put(url, json=robot_update_data)
+                    response = requests.put(url, json=robot_update_data, timeout=30)
                     response.raise_for_status()  # Raise an exception for HTTP errors
 
                     # Check the response
