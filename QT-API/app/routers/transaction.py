@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Request, HTTPException, status, Depends
+from fastapi import APIRouter, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from bson import ObjectId
 

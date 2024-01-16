@@ -59,10 +59,10 @@ with profile_column:
         password_value = st.text_input("Password", value=alpaca_user.password, type="password", key="password", disabled=False)
 
         # Input field for API key
-        api_key_value = st.text_input("API Key", value=alpaca_user.api_key, key="api_key", disabled=False)
+        api_key_value = st.text_input("Alpaca Key", value=alpaca_user.api_key, key="api_key", disabled=False)
 
         # Input field for secret key
-        secret_key_value = st.text_input("Secret Key", value=alpaca_user.secret_key, key="secret_key", disabled=False)
+        secret_key_value = st.text_input("Alpaca Secret Key", value=alpaca_user.secret_key, key="secret_key", disabled=False)
 
         st.markdown("")
 

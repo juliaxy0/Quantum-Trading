@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Request, Response, HTTPException, status, Depends
+from fastapi import APIRouter, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pydantic import ValidationError
 from typing import List
@@ -33,7 +33,6 @@ def find_user(id: str, request: Request):
         id = ObjectId(id)
     except ValidationError:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid user ID format")
-    
     if (user := request.app.database["users"].find_one({"_id": id})) is not None:
         user_response = UserResponse(email= user.get('email'),password=user.get('password'),username=user.get('username'), api_key=user.get('api_key'), secret_key=user.get('secret_key'))
         return user_response.dict()
@@ -46,10 +45,8 @@ def create_user(request: Request, user: User = Body(...)):
     existing_user = request.app.database["users"].find_one({"username": user.username})
     if existing_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Username already exists")
-
     # If username doesn't exist, proceed to create the new user
     user_dict = jsonable_encoder(user)
-    new_user = request.app.database["users"].insert_one(user_dict)
     return None
 
 @user.get("/", response_description="List all users", response_model=List[User])

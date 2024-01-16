@@ -31,6 +31,7 @@ css = '''
 st.markdown(css, unsafe_allow_html=True)
 
 st.subheader("Robot Manager")
+st.caption("Effectively oversee your automated trading robots and monitor their performance and profitability in this page.")
 
 # Create alpaca user
 alpaca_user = alpacaClass(username_param)

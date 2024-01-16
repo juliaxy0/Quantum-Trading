@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 from streamlit_extras.switch_page_button import switch_page
-from passlib.hash import pbkdf2_sha256
 
 st.set_page_config(initial_sidebar_state="collapsed")
 

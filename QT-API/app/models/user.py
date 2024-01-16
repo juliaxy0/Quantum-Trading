@@ -1,8 +1,5 @@
-import uuid
 from typing import Optional
 from pydantic import BaseModel, Field
-from bson import ObjectId 
-from decimal import Decimal
 
 class User(BaseModel):
     username: str = Field(...)
@@ -31,7 +28,7 @@ class UserResponse(BaseModel):
     username: str
     api_key: str
     secret_key: str
-    
+
 class UserUpdate(BaseModel):
     email: Optional[str]
     password: Optional[str]

@@ -43,6 +43,12 @@ class stratergiesClass:
                     'sentiment': 0,
                     'prediction': 0.5,
                 }
+            elif not prediction and not sentiment:
+                weights = {
+                    'technical': 0.5,
+                    'sentiment': 0,
+                    'prediction': 0.5,
+                }
 
             # Calculate based on weightage
             weighted_score = stratergiesClass.calculate_weighted_score(weights, buy_condition, sell_condition, sentiment_score, ml_prediction)
@@ -65,7 +71,7 @@ class stratergiesClass:
             # Return default values or handle the error as needed
             return False, False
 
-    
+    @staticmethod
     def calculate_weighted_score(self, buy_condition, sell_condition, sentiment_score, ml_prediction):
         
         try:

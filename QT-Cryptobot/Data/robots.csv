@@ -1,2 +1,1 @@
 id,Robot Name,Symbol,Quantity,Strategy,Status,Sentiment,Prediction,Bought
-65a2d5b5beb11bc0d9d9478e,robot1,BTC/USD,0.03,RSI,Stopped,False,True,0.12

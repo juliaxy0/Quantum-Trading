@@ -51,8 +51,7 @@ def all_crypto_sa():
     except Exception as e:
         # Print or log the exception details
         print(f"Exception: {e}")
-        return {"error": f"Internal server error: {e}"}
-        
+        return {"error": f"Internal server error: {e}"}  
 ################################ Prediction API
 
 predict = FastAPI(title="Quantum Trading Prediction API")
