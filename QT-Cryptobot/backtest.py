@@ -43,15 +43,15 @@ class backtestClass:
 
             # Call the corresponding strategy based on the value of strategy
             if strategy == "SMA":
-                entries, exits = self.SMA(comb_close, fast=10, slow=20)
+                entries, exits = self.SMA(comb_close, fast=500, slow=900)
             elif strategy == "RSI":
-                entries, exits = self.RSI(comb_close, rsi_window=14, entry=70, exit=30)
+                entries, exits = self.RSI(comb_close, rsi_window=100, entry=50, exit=20)
             elif strategy == "MACD":
                 entries, exits = self.MACD(comb_close)
             elif strategy == "BB":
                 entries, exits = self.BB(comb_close, window=14, entry_z_score=-1, exit_z_score=1)
             elif strategy == "MACD RSI":
-                entries, exits = self.MACD_RSI(comb_close, 14, 30, 70)
+                entries, exits = self.MACD_RSI(comb_close, 300, 20, 10)
             else:
                 # Handle the case when an invalid strategy is provided
                 print(f"Invalid strategy: {strategy}")
@@ -81,15 +81,13 @@ class backtestClass:
 
             # Call the corresponding strategy based on the value of strategy
             if strategy == "SMA":
-                entries, exits = self.SMA(btc_close, fast=10, slow=20)
+                entries, exits = self.SMA(btc_close, fast=500, slow=900)
             elif strategy == "RSI":
-                entries, exits = self.RSI(btc_close, rsi_window=14, entry=70, exit=30)
+                entries, exits = self.RSI(btc_close, rsi_window=100, entry=50, exit=20)
             elif strategy == "MACD":
                 entries, exits = self.MACD(btc_close)
-            elif strategy == "BB":
-                entries, exits = self.BB(btc_close, window=14, entry_z_score=-1, exit_z_score=1)
             elif strategy == "MACD RSI":
-                entries, exits = self.MACD_RSI(btc_close, 14, 30, 70)
+                entries, exits = self.MACD_RSI(btc_close, 300, 20, 10)
             else:
                 # Handle the case when an invalid strategy is provided
                 print(f"Invalid strategy: {strategy}")
@@ -100,7 +98,14 @@ class backtestClass:
             stats = pf.stats()
             stats = "\n".join([f"{key}: {value}" for key, value in stats.items()])
 
-            return stats
+            start_value = "${:.2f}".format(pf.stats(metrics="start_value")["Start Value"])
+            end_value = "${:.2f}".format(pf.stats(metrics="end_value")["End Value"])
+            total_return = "{:.2f}%".format(pf.stats(metrics="total_return")["Total Return [%]"])
+            total_trade = pf.stats(metrics="total_trades")["Total Trades"]
+            result_array = np.array([start_value, end_value, total_return,total_trade])
+
+            # summary =
+            return result_array, stats
         
         except Exception as e:
                 print(f"Error backtesting {symbol}: {e}")
@@ -108,7 +113,7 @@ class backtestClass:
 ################################## Stratergy
 
     @staticmethod
-    def SMA(data, fast=10, slow=20):
+    def SMA(data, fast, slow):
 
         try:
 
@@ -124,7 +129,7 @@ class backtestClass:
             print(f"Error backtesting SMA: {e}")
     
     @staticmethod
-    def RSI(data, rsi_window=14, entry=70, exit=30): 
+    def RSI(data, rsi_window, entry, exit): 
 
         try:
 
@@ -141,30 +146,11 @@ class backtestClass:
             print(f"Error backtesting RSI: {e}")
 
     @staticmethod
-    def BB(data, window, entry_z_score=-1, exit_z_score=1):
-
-        try:
-
-            bb = vbt.BB.run(data, window=window, short_name='bb')
-
-            # Calculate z-scores
-            z_scores = (data['close'] - bb.bb_lower) / bb.bb_std
-
-            # Generate entry and exit signals based on z-scores
-            entries = z_scores < entry_z_score
-            exits = z_scores > exit_z_score
-
-            return entries, exits
-
-        except Exception as e:
-            print(f"Error backtesting BB: {e}")
-
-    @staticmethod
     def MACD(data):
 
         try:
             # MACD
-            macd = vbt.MACD.run(data, short_name='macd')
+            macd = vbt.MACD.run(data,fast_window=620,slow_window=760,signal_window=250, short_name='macd')
 
             entries = macd.macd_above(macd.signal).to_numpy()
             exits = macd.macd_below(macd.signal).to_numpy()

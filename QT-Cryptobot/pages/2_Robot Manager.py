@@ -82,7 +82,7 @@ with form_column:
                     new_quantity = st.number_input('Quantity', value=float(default_values['Quantity']))
 
                     # Dropdown for new Strategy
-                    strategy_options = ["MACD&RSI", "MA&BOL", "RSI", "MACD", "Stochastic"]
+                    strategy_options = ["MACD RSI Synergy", "Relative Strength Index", "Moving Average Convergence Divergence", "Simple Moving Average"]
                     new_strategy = st.selectbox('Strategy', strategy_options, index=strategy_options.index(default_values['Strategy']))
 
                     new_status = st.selectbox('Status', ['Running', 'Stopped'], index=0 if default_values['Status'] == 'Running' else 1)

@@ -6,6 +6,7 @@ from stratergies import stratergiesClass
 from PIL import Image
 import pandas as pd
 from streamlit_extras.app_logo import add_logo
+from datetime import datetime
 
 st.set_page_config(layout="wide", initial_sidebar_state="collapsed", page_title="Real-time Monitoring", page_icon = ":money_with_wings:")
 
@@ -144,7 +145,30 @@ with placeholder.container():
     
     st.info("The OHLC drawboard is provided by TradingView, intended solely for self-analysis purposes. Please refer the top columns for Alpaca's pricing information", icon="ℹ️")
 
+with st.expander("Analysis Details"):
     
+    sent, predicts = st.columns([0.7,0.3])
+
+    with sent:
+
+                st.subheader("Sentiment Analysis Results")
+            
+                # File paths
+                file_path = {
+                    'BTC': r'E:/QuantumTrading/QT-API\sentimentData/BTC.csv',
+                    'ETH': r'E:/QuantumTrading/QT-API\sentimentData/ETH.csv',
+                    'LINK': r'E:/QuantumTrading/QT-API\sentimentData/LINK.csv',
+                    'LTC': r'E:/QuantumTrading/QT-API\sentimentData/LTC.csv',
+                }
+
+                # Dropdown for selecting cryptocurrency
+                selected_crypto = st.selectbox('Select Cryptocurrency', list(file_path.keys()))
+                sentiment_result = st.empty()
+
+    with predicts:
+                st.markdown("")
+                st.subheader("Prediction Analysis Results")
+                predict_result = st.empty()
 
 while True:
 
@@ -312,5 +336,19 @@ while True:
                 delta=delta_ltc
             )
     
+    with sentiment_result:
+
+        # Load the selected CSV file
+        sent_df = pd.read_csv(file_path[selected_crypto])
+        sent_df = sent_df.tail(10)
+        st.dataframe(sent_df, hide_index=True, use_container_width = True)
+            
+    with predict_result:
+
+        # Load the CSV file into a DataFrame
+        file_paths = r'E:/QuantumTrading/QT-API/predictionData/prediction.csv'
+        df_prediction = pd.read_csv(file_paths)
+        st.dataframe(df_prediction, hide_index=True, use_container_width = True)
+
     # Wait for 10 seconds before the next iteration
     time.sleep(60)

@@ -41,6 +41,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
 def main():
 
 
@@ -48,9 +49,7 @@ def main():
 
     with mid:
 
-        st.markdown("<h2 style='text-align:center'>Quantum Trading</h2>", unsafe_allow_html=True)
-
-        st.write("Where youre investing experience are elevated.")
+        st.image("pics/login.png")
 
         with st.form("create_user_form"):
 

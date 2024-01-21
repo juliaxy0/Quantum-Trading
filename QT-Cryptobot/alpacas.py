@@ -784,16 +784,14 @@ class alpacaClass:
                     sell_condition = False
 
                     # Execute the corresponding strategy method
-                    if strategy == "MACD&RSI":
-                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"MACD&RSI",current_data)
-                    elif strategy == "SMA":
-                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"SMA",current_data)
-                    elif strategy == "RSI":
-                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"RSI",current_data)
-                    elif strategy == "MACD":
-                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"MACD",current_data)
-                    elif strategy == "BB":
-                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"BB",current_data)
+                    if strategy == "MACD RSI Synergy":
+                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"MACD RSI Synergy",current_data)
+                    elif strategy == "Simple Moving Average":
+                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"Simple Moving Average",current_data)
+                    elif strategy == "Relative Strength Index":
+                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"Relative Strength Index",current_data)
+                    elif strategy == "Moving Average Convergence Divergence":
+                        buy_condition, sell_condition = stratergiesClass.DecisionMaker(coin,sentiment,prediction,"Moving Average Convergence Divergence",current_data)
 
                     # Execute buy and sell orders based on signals
                     if buy_condition:

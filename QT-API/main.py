@@ -106,6 +106,9 @@ def startup_db_client():
     database.database = database.mongodb_client[config["DB_NAME"]]
     print("Connected to the MongoDB database!")
 
+    continuous_thread = threading.Thread(target=all_crypto_predict, daemon=True)
+    continuous_thread.start()
+
 @database.on_event("shutdown")
 def shutdown_db_client():
     database.mongodb_client.close()

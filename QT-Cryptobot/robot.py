@@ -55,9 +55,9 @@ class robotClass:
                 'Symbol': [symbol],
                 'Quantity': [quantity],
                 'Strategy': [strategy],
+                'Status': [status],
                 'Sentiment': [sentiment_analysis],
                 'Prediction': [prediction_analysis],
-                'Status': [status],
                 'Bought': [0.0]
             })
 
@@ -147,9 +147,9 @@ class robotClass:
         # Update the data
         data.loc[data['Robot Name'] == selected_robot, 'Quantity'] = new_quantity
         data.loc[data['Robot Name'] == selected_robot, 'Strategy'] = new_strategy
+        data.loc[data['Robot Name'] == selected_robot, 'Status'] = new_status
         data.loc[data['Robot Name'] == selected_robot, 'Sentiment'] = new_sentiment_analysis
         data.loc[data['Robot Name'] == selected_robot, 'Prediction'] = new_prediction_analysis
-        data.loc[data['Robot Name'] == selected_robot, 'Status'] = new_status
 
         # Save the updated data to the CSV file
         data.to_csv('Data/robots.csv', index=False)

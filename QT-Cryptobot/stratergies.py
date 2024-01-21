@@ -10,16 +10,14 @@ class stratergiesClass:
     def DecisionMaker(coin, sentiment,prediction,strategy, current_data):
         try:
 
-            if strategy == "MACD&RSI":
+            if strategy == "MACD RSI Synergy":
                 buy_condition, sell_condition = stratergiesClass.macd_rsi(current_data)
-            elif strategy == "SMA":
+            elif strategy == "Simple Moving Average":
                 buy_condition, sell_condition = stratergiesClass.sma_strategy(current_data)
-            elif strategy == "RSI":
+            elif strategy == "Relative Strength Index":
                 buy_condition, sell_condition = stratergiesClass.rsi_strategy(current_data)
-            elif strategy == "MACD":
+            elif strategy == "Moving Average Convergence Divergence":
                     buy_condition, sell_condition = stratergiesClass.macd_strategy(current_data)
-            elif strategy == "BB":
-                buy_condition, sell_condition = stratergiesClass.bb_strategy(current_data)
 
             # Get all components
             sentiment_score = stratergiesClass.check_sentiment(coin)
@@ -72,15 +70,15 @@ class stratergiesClass:
             return False, False
 
     @staticmethod
-    def calculate_weighted_score(self, buy_condition, sell_condition, sentiment_score, ml_prediction):
+    def calculate_weighted_score(weights, buy_condition, sell_condition, sentiment_score, ml_prediction):
         
         try:
 
             # Check if it's a buy condition
             if buy_condition:
-                technical_weighted_score = self.weights['technical']
-                sentiment_weighted_score = self.weights['sentiment']
-                prediction_weighted_score = self.weights['prediction']
+                technical_weighted_score = weights['technical']
+                sentiment_weighted_score = weights['sentiment']
+                prediction_weighted_score = weights['prediction']
 
                 # Calculate the weighted score for the buy condition
                 weighted_score = (
@@ -90,9 +88,9 @@ class stratergiesClass:
                 )
             # Check if it's a sell condition
             elif sell_condition:
-                technical_weighted_score = self.weights['technical']
-                sentiment_weighted_score = self.weights['sentiment']
-                prediction_weighted_score = self.weights['prediction']
+                technical_weighted_score = weights['technical']
+                sentiment_weighted_score = weights['sentiment']
+                prediction_weighted_score = weights['prediction']
 
                 # Calculate the weighted score for the sell condition
                 weighted_score = (
@@ -112,43 +110,14 @@ class stratergiesClass:
 
             # Return default values or handle the error as needed
             return False, False
-        
-    @staticmethod
-    def macd_rsi(current_data):
 
-        try:
-
-            # Perform MACD and RSI calculations for all rows
-            current_data['macd'], current_data['macdsignal'], _ = talib.MACD(current_data['close'], fastperiod=12, slowperiod=26, signalperiod=9)
-            current_data['rsi'] = talib.RSI(current_data['close'], timeperiod=14)
-
-            # Get the last row
-            last_row = current_data.iloc[-1].copy()
-
-            # Get crypto
-            crypto = crypto
-            crypto = crypto.replace("/USD", "")
-            
-            # Generate buy/sell signals based on MACD and RSI for the last row only
-            last_row['buy_signal'] = (last_row['macd'] > last_row['macdsignal']) & (last_row['rsi'] < 30) 
-            last_row['sell_signal'] = (last_row['macd'] < last_row['macdsignal']) & (last_row['rsi'] > 70) 
-
-            buy_condition = last_row['buy_signal']
-            sell_condition = last_row['sell_signal']
-
-            # Return buy and sell signals for new rows only
-            return buy_condition, sell_condition
-
-        except Exception as e:
-            # Handle the exception here, you can print an error message or log it
-            print(f"Error in MACD RSI: {e}")
-
-            # Return default values or handle the error as needed
-            return False, False
         
     @staticmethod
     def check_sentiment(crypto):
         try:
+
+            crypto = crypto.split("/")[0]
+
             # Check if the file exists
             file_path = 'E:/QuantumTrading/QT-API/sentimentData/{}.csv'.format(crypto)
             if not os.path.isfile(file_path):
@@ -177,6 +146,7 @@ class stratergiesClass:
     @staticmethod
     def check_prediction(symbol):
         try:
+
             # Specify the file path
             csv_file_path = 'E:/QuantumTrading/QT-API/predictionData/prediction.csv'
 
@@ -185,11 +155,14 @@ class stratergiesClass:
                 # Read the CSV file into a DataFrame
                 prediction_df = pd.read_csv(csv_file_path)
 
+                symbol = symbol.split("/")[0].lower()
+
                 # Filter the DataFrame based on the symbol
                 symbol_filter = prediction_df['symbol'] == symbol
 
                 # Check if the symbol is present in the DataFrame
                 if symbol_filter.any():
+                    
                     # Retrieve the prediction value for the specified symbol
                     prediction_value = prediction_df.loc[symbol_filter, 'prediction'].values[0]
                     return prediction_value
@@ -204,19 +177,20 @@ class stratergiesClass:
             return None
         
     ################################## BASIC STRATERGY
-
+        
     @staticmethod
     def sma_strategy(current_data):
         try:
             # SMA (Simple Moving Average)
-            current_data['sma'] = talib.SMA(current_data['close'], timeperiod=20)
+            current_data['fast_sma'] = talib.SMA(current_data['close'], timeperiod=500)
+            current_data['slow_sma'] = talib.SMA(current_data['close'], timeperiod=900)
 
             # Get the last row
             last_row = current_data.iloc[-1].copy()
 
             # Generate buy/sell signals based on SMA for the last row only
-            last_row['buy_signal'] = last_row['close'] > last_row['sma']
-            last_row['sell_signal'] = last_row['close'] < last_row['sma']
+            last_row['buy_signal'] = last_row['fast_sma'] > last_row['slow_sma']
+            last_row['sell_signal'] = last_row['fast_sma'] < last_row['slow_sma']
 
             buy_condition = last_row['buy_signal']
             sell_condition = last_row['sell_signal']
@@ -235,20 +209,20 @@ class stratergiesClass:
     def rsi_strategy(current_data):
         try:
             # RSI (Relative Strength Index)
-            current_data['rsi'] = talib.RSI(current_data['close'], timeperiod=14)
+            current_data['rsi'] = talib.RSI(current_data['close'], timeperiod=100)
 
             # Get the last row
             last_row = current_data.iloc[-1].copy()
 
             # Generate buy/sell signals based on RSI for the last row only
-            last_row['buy_signal'] = last_row['rsi'] < 30
-            last_row['sell_signal'] = last_row['rsi'] > 70
+            last_row['buy_signal'] = last_row['rsi'] < 50
+            last_row['sell_signal'] = last_row['rsi'] > 80  # Adjusted exit condition to 80
 
             buy_condition = last_row['buy_signal']
             sell_condition = last_row['sell_signal']
 
             # Return buy and sell signals for new rows only
-            return True, sell_condition
+            return buy_condition, sell_condition
 
         except Exception as e:
             # Handle the exception here, you can print an error message or log it
@@ -261,7 +235,7 @@ class stratergiesClass:
     def macd_strategy(current_data):
         try:
             # MACD (Moving Average Convergence Divergence)
-            current_data['macd'], current_data['macdsignal'], _ = talib.MACD(current_data['close'], fastperiod=12, slowperiod=26, signalperiod=9)
+            current_data['macd'], current_data['macdsignal'], _ = talib.MACD(current_data['close'], fastperiod=620, slowperiod=760, signalperiod=250)
 
             # Get the last row
             last_row = current_data.iloc[-1].copy()
@@ -282,6 +256,44 @@ class stratergiesClass:
 
             # Return default values or handle the error as needed
             return False, False
+
+    @staticmethod
+    def macd_rsi(current_data):
+
+        try:
+
+            # Perform MACD and RSI calculations for all rows
+            current_data['macd'], current_data['macdsignal'], _ = talib.MACD(current_data['close'])
+            current_data['rsi'] = talib.RSI(current_data['close'], timeperiod=300)
+
+            # Get the last row
+            last_row = current_data.iloc[-1].copy()
+
+            # Get crypto
+            crypto = crypto
+            crypto = crypto.replace("/USD", "")
+            
+            # Generate buy/sell signals based on MACD and RSI for the last row only
+            last_row['buy_signal'] = (last_row['macd'] > last_row['macdsignal']) & (last_row['rsi'] < 20) 
+            last_row['sell_signal'] = (last_row['macd'] < last_row['macdsignal']) & (last_row['rsi'] > 10) 
+
+            buy_condition = last_row['buy_signal']
+            sell_condition = last_row['sell_signal']
+
+            # Return buy and sell signals for new rows only
+            return buy_condition, sell_condition
+
+        except Exception as e:
+            # Handle the exception here, you can print an error message or log it
+            print(f"Error in MACD RSI: {e}")
+
+            # Return default values or handle the error as needed
+            return False, False
+
+
+
+
+
 
     @staticmethod
     def bb_strategy(current_data):
