@@ -362,6 +362,8 @@ while True:
                 # Update config to hide the fullscreen button
                 st.plotly_chart(fig, config={'displayModeBar': False})
 
+                st.markdown("")
+                st.markdown("")
                 # Show asset and throw exception
                 try:
                     # Read live data from 'asset.csv' file
@@ -372,10 +374,15 @@ while True:
                     selected_data = asset_table.drop(columns=asset_table.columns.difference(['Symbol', 'Quantity', 'Market Value']))
                     st.table(selected_data)
 
+                
                 except Exception as e:
                     # Handle the error, and create an empty DataFrame
                     empty_data = pd.DataFrame(columns=['Symbol', 'Quantity', 'Market Value'])
                     st.table(empty_data, hide_index=True)
+                
+                st.markdown("")
+                st.markdown("")
+                st.subheader("")
             
         with st.expander("Latest transactions"):
             
@@ -388,5 +395,5 @@ while True:
             st.dataframe(last_5_transactions, hide_index=True, use_container_width = True)
 
         # Wait for 10 seconds before the next iteration
-        time.sleep(60)
+        time.sleep(11)
 

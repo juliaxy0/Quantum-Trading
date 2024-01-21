@@ -7,12 +7,12 @@ import pandas as pd
 
 class sentimentAnalysisClass:
 
-    def __init__(self,crypto):
+    def __init__(self):
         # Setup Model
         self.model_name = "human-centered-summarization/financial-summarization-pegasus"
         self.tokenizer = PegasusTokenizer.from_pretrained(self.model_name)
         self.model = PegasusForConditionalGeneration.from_pretrained(self.model_name)
-        self.crypto = crypto
+
         
     def search_for_stock_news_links(self,ticker):
         search_url = 'https://cryptonews.net/?q={}&rubricId=-1&location=title&type=any&time=past_day'.format(ticker)
@@ -71,7 +71,9 @@ class sentimentAnalysisClass:
             output.append(output_this)
         return output
 
-    def analyse(self):
+    def analyse(self, crypto):
+        
+        self.crypto = crypto
 
         # Search for Stock News using Google and Yahoo Finance
         urls = self.search_for_stock_news_links(self.crypto)

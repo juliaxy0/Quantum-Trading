@@ -68,6 +68,7 @@ with form_column:
     stratContainer = st.container(border=True)
 
     with stratContainer:
+        st.caption("Available strategies:")
         image_path = "pics\strategies.PNG"
         st.image(image_path)
         st.markdown("")
@@ -76,7 +77,6 @@ with form_column:
         start_date = st.text_input("Start Date (DD-MM-YYYY)", key="start_date_input", value=prev_start_date, help="Choose the starting date for the backtesting data period.")
         end_date = st.text_input("End Date (DD-MM-YYYY)", key="end_date_input", value=prev_end_date, help="Choose the end date for the backtesting data period.")
         selected_strategy = st.selectbox("Select Trading Strategy", ["Simple Moving Average", "Moving Average Convergence Divergence", "Relative Strength Index", "MACD RSI Synergy"], help="Choose the stratergy for the backtesting implementation")
-
         c1 ,  button, c2 , = st.columns([1,1,1])
 
         with button:
@@ -88,10 +88,10 @@ with form_column:
                             
                         bar=st.empty()
 
-                        bar=st.progress(0)
+                        bar=st.progress(20)
                         robot_user.get_historical_data(start_date, end_date)
                     
-                        bar.progress(20)
+                        bar.progress(30)
                         summary_btc, btc_stats = backtest_user.backtest_indv("BTCUSD",start_date,selected_strategy)
 
                         bar.progress(40)
@@ -107,6 +107,10 @@ with form_column:
                         max_return_df = backtest_user.start_backtest(start_date,selected_strategy)
 
                         bar.empty()
+
+                        # Update previous values
+                        prev_start_date = start_date
+                        prev_end_date = end_date
 
                     else:
                         
@@ -129,9 +133,7 @@ with form_column:
                         
                         bar.empty()
 
-                    # Update previous values
-                    prev_start_date = start_date
-                    prev_end_date = end_date
+                    
         st.caption("*Backtesting is only applicable to strategies relying on technical analysis.")
 
     with st.expander("Backtesting Details"):
@@ -227,7 +229,7 @@ with view_column:
                 title='Mean Return by Symbol',
                 xaxis=dict(title='Symbol'),
                 yaxis=dict(title='Mean Return'),
-                height=400
+                height=440
             )
 
             # Show the plot
@@ -253,7 +255,7 @@ while True:
         st.dataframe(logs, hide_index=True, use_container_width = True)
 
     # Wait for 10 seconds before the next iteration
-    time.sleep(60)
+    time.sleep(1)
 
     
     

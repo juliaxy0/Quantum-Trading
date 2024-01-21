@@ -42,15 +42,13 @@ class backtestClass:
             comb_close.vbt.drop_levels(-1, inplace=True)
 
             # Call the corresponding strategy based on the value of strategy
-            if strategy == "SMA":
+            if strategy == "Simple Moving Average":
                 entries, exits = self.SMA(comb_close, fast=500, slow=900)
-            elif strategy == "RSI":
+            elif strategy == "Relative Strength Index":
                 entries, exits = self.RSI(comb_close, rsi_window=100, entry=50, exit=20)
-            elif strategy == "MACD":
+            elif strategy == "Moving Average Convergence Divergence":
                 entries, exits = self.MACD(comb_close)
-            elif strategy == "BB":
-                entries, exits = self.BB(comb_close, window=14, entry_z_score=-1, exit_z_score=1)
-            elif strategy == "MACD RSI":
+            elif strategy == "MACD RSI Synergy":
                 entries, exits = self.MACD_RSI(comb_close, 300, 20, 10)
             else:
                 # Handle the case when an invalid strategy is provided
@@ -80,13 +78,13 @@ class backtestClass:
             btc_close = btc_data_resampled.get('close')
 
             # Call the corresponding strategy based on the value of strategy
-            if strategy == "SMA":
+            if strategy == "Simple Moving Average":
                 entries, exits = self.SMA(btc_close, fast=500, slow=900)
-            elif strategy == "RSI":
+            elif strategy == "Relative Strength Index":
                 entries, exits = self.RSI(btc_close, rsi_window=100, entry=50, exit=20)
-            elif strategy == "MACD":
+            elif strategy == "Moving Average Convergence Divergence":
                 entries, exits = self.MACD(btc_close)
-            elif strategy == "MACD RSI":
+            elif strategy == "MACD RSI Synergy":
                 entries, exits = self.MACD_RSI(btc_close, 300, 20, 10)
             else:
                 # Handle the case when an invalid strategy is provided

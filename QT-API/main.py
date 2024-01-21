@@ -31,20 +31,17 @@ def all_crypto_sa():
 
     try:
 
-        btc = sentimentAnalysisClass("BTC")
-        eth = sentimentAnalysisClass("ETH")
-        link = sentimentAnalysisClass("LINK")
-        ltc = sentimentAnalysisClass("LTC")
+        sentiment = sentimentAnalysisClass()
 
         while True:
-            btc.analyse()
+            sentiment.analyse("BTC")
             print("Updated BTC sentiment analysis")
-            eth.analyse()
+            sentiment.analyse("ETH")
             print("Updated ETH sentiment analysis")
-            link.analyse()
+            sentiment.analyse("LINK")
             print("Updated LINK sentiment analysis")
-            ltc.analyse()
-            print("Updated LTC sentiment analysis")
+            sentiment.analyse("LTC")
+            print("Updated LTC sentiment analysis") 
 
             time.sleep(5)
 

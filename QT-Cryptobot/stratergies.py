@@ -196,7 +196,7 @@ class stratergiesClass:
             sell_condition = last_row['sell_signal']
 
             # Return buy and sell signals for new rows only
-            return buy_condition, sell_condition
+            return buy_condition, True
 
         except Exception as e:
             # Handle the exception here, you can print an error message or log it
@@ -222,7 +222,7 @@ class stratergiesClass:
             sell_condition = last_row['sell_signal']
 
             # Return buy and sell signals for new rows only
-            return buy_condition, sell_condition
+            return buy_condition, True
 
         except Exception as e:
             # Handle the exception here, you can print an error message or log it
@@ -248,7 +248,7 @@ class stratergiesClass:
             sell_condition = last_row['sell_signal']
 
             # Return buy and sell signals for new rows only
-            return buy_condition, sell_condition
+            return True, sell_condition 
 
         except Exception as e:
             # Handle the exception here, you can print an error message or log it
@@ -268,10 +268,6 @@ class stratergiesClass:
 
             # Get the last row
             last_row = current_data.iloc[-1].copy()
-
-            # Get crypto
-            crypto = crypto
-            crypto = crypto.replace("/USD", "")
             
             # Generate buy/sell signals based on MACD and RSI for the last row only
             last_row['buy_signal'] = (last_row['macd'] > last_row['macdsignal']) & (last_row['rsi'] < 20) 
@@ -281,7 +277,7 @@ class stratergiesClass:
             sell_condition = last_row['sell_signal']
 
             # Return buy and sell signals for new rows only
-            return buy_condition, sell_condition
+            return buy_condition, True
 
         except Exception as e:
             # Handle the exception here, you can print an error message or log it

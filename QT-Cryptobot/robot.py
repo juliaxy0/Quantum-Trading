@@ -192,10 +192,7 @@ class robotClass:
             # Read profit_data from CSV file
             profit_data = pd.read_csv(file_path)
 
-            # Filter the DataFrame to include only rows where Username matches self.username
-            filtered_data = profit_data[profit_data['Username'] == _self.username]
-
-            return filtered_data
+            return profit_data
 
         except FileNotFoundError:
             print(f"Error: File '{file_path}' not found.")
@@ -279,7 +276,7 @@ class robotClass:
             clean_symbol = symbol.replace('/', '')
 
             # Empty the file
-            file_path = f'E:/QuantumTrading/QT-Backtest-API/backtestingData/{clean_symbol}.csv'
+            file_path = f'E:/QuantumTrading/QT-Cryptobot/backtestingData/{clean_symbol}.csv'
             header = "timestamp,open,high,low,close,volume,trade_count,vwap\n"
             with open(file_path, 'w') as file:
                 file.write(header)
@@ -305,7 +302,7 @@ class robotClass:
                 historical_df = historical_df.drop(columns=['symbol']).set_index('timestamp')
 
                 # Append the new data to 'symbol.csv' or create a new file
-                history_filename = f'E:/QuantumTrading/QT-Backtest-API/backtestingData/{clean_symbol}.csv'
+                history_filename = f'E:/QuantumTrading/QT-Cryptobot/backtestingData/{clean_symbol}.csv'
                 historical_df.to_csv(history_filename, mode='a', header=not os.path.exists(history_filename), index=True)
                 print(f"Historical data for {symbol} saved successfully!")
 

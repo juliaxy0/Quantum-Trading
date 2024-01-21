@@ -127,12 +127,12 @@ with form_column:
                 robot_name = st.text_input("Robot Name", key="robot_name_input", value="robot1")
 
                 # Dropdown for Symbol
-                symbol_options = ["BTC/USD", "DOT/USD", "ETH/USD", "LINK/USD", "LTC/USD"]
+                symbol_options = ["BTC/USD", "ETH/USD", "LINK/USD", "LTC/USD"]
                 symb = st.selectbox("Symbol", symbol_options, key="symbol_input", index=0)
 
                 quantity = st.number_input("Quantity", key="quantity_input", value=0.03)
 
-                strategies = ["MACD&RSI", "MA&BOL", "RSI", "MACD", "Stochastic"]
+                strategies = ["MACD RSI Synergy", "Relative Strength Index", "Moving Average Convergence Divergence", "Simple Moving Average"]
                 strategy = st.selectbox("Strategy", strategies, key="strategy_input")
 
                 # Dropdown for Status
@@ -205,8 +205,10 @@ while True:
         fig = go.Figure()
 
         # Iterate over unique combinations of Username and Robot Name
+        # Iterate over unique combinations of Username and Robot Name
         for (username, robot_name), robot_data in df.groupby(['Username', 'Robot Name']):
             fig.add_trace(go.Scatter(x=robot_data['Timestamp'], y=robot_data['Profit'], mode='lines', name=f"{robot_name}"))
+
 
         # Update layout with custom width and height
         fig.update_layout(
@@ -230,7 +232,7 @@ while True:
         st.info('Backtest robot with stratergies for more informed decisions', icon="ℹ️")
 
         # Wait for 10 seconds before the next iteration
-        time.sleep(60)
+        time.sleep(1)
 
     
     

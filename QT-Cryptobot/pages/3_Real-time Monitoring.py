@@ -351,4 +351,4 @@ while True:
         st.dataframe(df_prediction, hide_index=True, use_container_width = True)
 
     # Wait for 10 seconds before the next iteration
-    time.sleep(60)
+    time.sleep(1)

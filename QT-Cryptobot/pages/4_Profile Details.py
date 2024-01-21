@@ -80,7 +80,7 @@ while True:
     with sidebarContainer.container():
     
         logs = pd.read_csv("logs.csv")
-        logs = logs.tail(3)
+        logs = logs.tail(5)
         st.markdown("")
         st.dataframe(logs, hide_index=True, use_container_width = True)
 
@@ -89,7 +89,7 @@ while True:
     robot_user.updateProfit()
         
     # Wait for 10 seconds before the next iteration
-    time.sleep(60)
+    time.sleep(1)
 
     
     
